@@ -3,44 +3,25 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-}
-
-enum UserRole {
-  ARTIST
-  VIEWER
-}
-
-enum ArtworkStatus {
-  NOT_FOR_SALE
-  FIXED_PRICE
-  SOLD
-}
-
-enum TransactionType {
-  ONE_TIME_PURCHASE
-  PAY_TO_VIEW
-}
-
-enum TransactionStatus {
-  PENDING
-  COMPLETED
-  FAILED
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 model User {
   id              String    @id @default(uuid())
-  role            UserRole  @default(VIEWER)
+  role            String    @default("VIEWER")
   email           String    @unique
   emailVerified   DateTime?
   hashedPassword  String?
   googleId        String?   @unique
+
   walletPointer   String?   @unique
+
   name            String?
   image           String?
   bio             String?
   location        String?
-  socialLinks     Json?
+  socialLinks     String?
 
   artworks        Artwork[]
   galleries       Gallery[]
@@ -83,7 +64,7 @@ model Gallery {
   artistId        String
   title           String
   description     String?
-  accessFee       Decimal   @db.Decimal(10, 2)
+  accessFee       Float
   coverImageUrl   String
   coverImageKey   String
 
@@ -102,14 +83,17 @@ model Artwork {
   id              String        @id @default(uuid())
   artistId        String
   galleryId       String?
+
   title           String
   description     String?
   medium          String?
   dimensions      String?
   yearCreated     Int?
   category        String?
-  status          ArtworkStatus @default(NOT_FOR_SALE)
-  price           Decimal?      @db.Decimal(10, 2)
+
+  status          String        @default("NOT_FOR_SALE")
+  price           Float?
+
   thumbnailUrl    String
   thumbnailKey    String
   highResKey      String
@@ -135,13 +119,16 @@ model Transaction {
   sellerId              String
   artworkId             String?
   galleryId             String?
-  type                  TransactionType
-  amount                Decimal           @db.Decimal(10, 2)
-  platformFee           Decimal           @db.Decimal(10, 2) @default(0)
+
+  type                  String
+  amount                Float
+  platformFee           Float             @default(0)
   currency              String            @default("USD")
+
   openPaymentsUrl       String?
-  status                TransactionStatus @default(PENDING)
-  shippingDetails       Json?
+  status                String            @default("PENDING")
+
+  shippingDetails       String?
 
   buyer                 User              @relation("Buyer", fields: [buyerId], references: [id])
   seller                User              @relation("Seller", fields: [sellerId], references: [id])
@@ -175,8 +162,10 @@ model GalleryAccess {
 model SavedArtwork {
   viewerId    String
   artworkId   String
+
   viewer      User      @relation(fields: [viewerId], references: [id], onDelete: Cascade)
   artwork     Artwork   @relation(fields: [artworkId], references: [id], onDelete: Cascade)
+
   savedAt     DateTime  @default(now())
 
   @@id([viewerId, artworkId])
@@ -186,8 +175,10 @@ model SavedArtwork {
 model Follow {
   followerId    String
   followingId   String
+
   follower      User    @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
   following     User    @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+
   createdAt     DateTime @default(now())
 
   @@id([followerId, followingId])

@@ -1,26 +1,23 @@
-import { DefaultSession } from "next-auth"
-
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string
-      role: string
-    } & DefaultSession["user"]
-  }
-
-  interface User {
-    id: string
-    role: string
-  }
+export enum UserRole {
+  ARTIST = 'ARTIST',
+  VIEWER = 'VIEWER'
 }
 
-export const Categories = [
-  'Digital Art', 
-  'Oil Paintings', 
-  'Photography', 
-  'Sculptures', 
-  'Watercolor', 
-  'Mixed Media'
-] as const;
+export enum ArtworkStatus {
+  NOT_FOR_SALE = 'NOT_FOR_SALE',
+  FIXED_PRICE = 'FIXED_PRICE',
+  SOLD = 'SOLD'
+}
 
-export type Category = typeof Categories[number];
+export enum TransactionType {
+  ONE_TIME_PURCHASE = 'ONE_TIME_PURCHASE',
+  PAY_TO_VIEW = 'PAY_TO_VIEW'
+}
+
+export enum TransactionStatus {
+  PENDING = 'PENDING',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED'
+}
+
+export const Categories = ['Digital Art', 'Oil Paintings', 'Photography', 'Sculptures', 'Watercolor', 'Mixed Media']

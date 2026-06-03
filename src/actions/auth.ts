@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { z } from "zod"
 import { signIn } from "@/auth"
-import { UserRole } from "@prisma/client"
+import { UserRole } from "@/types"
 
 const registerSchema = z.object({
   email: z.string().email(),

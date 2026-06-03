@@ -1,4 +1,5 @@
-import { PrismaClient, UserRole, ArtworkStatus, TransactionType } from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
+import { UserRole, ArtworkStatus, TransactionType } from '../src/types'
 import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
