@@ -2,6 +2,33 @@ import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
 import { Avatar, Button, Card, Badge } from "@/components/ui"
 import Link from "next/link"
+import { Metadata, ResolvingMetadata } from "next"
+
+export async function generateMetadata(
+  { params }: { params: { id: string } },
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const gallery = await prisma.gallery.findUnique({
+    where: { id: params.id },
+    include: { artist: true }
+  })
+
+  if (!gallery) return {}
+
+  const meta: Metadata = {
+    title: `${gallery.title} - Seamlyy`,
+    description: gallery.description || `View ${gallery.title} on Seamlyy`,
+  }
+
+  // Web Monetization Standard (ILP)
+  if (gallery.artist.walletPointer) {
+    meta.other = {
+      monetization: gallery.artist.walletPointer
+    }
+  }
+
+  return meta
+}
 
 export default async function GalleryPage({ params }: { params: { id: string } }) {
   const gallery = await prisma.gallery.findUnique({

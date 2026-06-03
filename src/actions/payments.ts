@@ -36,7 +36,7 @@ export async function initiatePayment(params: {
 
     // 2. Create Incoming Payment on Seller's Wallet
     const incomingPayment = await client.incomingPayment.create(
-      { url: sellerWalletAddress.resourceServer },
+      { url: sellerWalletAddress.resourceServer, accessToken: '' } as any,
       {
         walletAddress: sellerWalletAddress.id,
         incomingAmount: {
@@ -56,7 +56,7 @@ export async function initiatePayment(params: {
     })
 
     const quote = await client.quote.create(
-      { url: buyerWalletAddress.resourceServer },
+      { url: buyerWalletAddress.resourceServer, accessToken: '' } as any,
       {
         walletAddress: buyerWalletAddress.id,
         receiver: incomingPayment.id,
@@ -78,7 +78,7 @@ export async function initiatePayment(params: {
               limits: {
                 debitAmount: quote.debitAmount,
                 receiveAmount: quote.receiveAmount
-              }
+              } as any
             }
           ]
         },
@@ -93,7 +93,7 @@ export async function initiatePayment(params: {
       }
     )
 
-    if (!grantRequest.interact?.redirect) {
+    if (!(grantRequest as any).interact?.redirect) {
       throw new Error("No interact redirect URI returned from grant request")
     }
 
@@ -115,14 +115,14 @@ export async function initiatePayment(params: {
         openPaymentsUrl: grantRequest.continue?.uri,
         shippingDetails: {
           quoteId: quote.id,
-          continueToken: grantRequest.continue?.access_token.value
-        }
+          continueToken: grantRequest.continue?.access_token.value as string
+        } as any
       }
     })
 
     return { 
       success: true, 
-      redirectUrl: grantRequest.interact.redirect,
+      redirectUrl: (grantRequest as any).interact.redirect,
       transactionId: txId
     }
   } catch (error) {

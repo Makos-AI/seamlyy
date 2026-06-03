@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.redirect(new URL('/payment/error', req.url))
     }
 
-    const metadata = transaction.shippingDetails as { quoteId: string, continueToken: string }
+    const metadata = transaction.shippingDetails as any
 
     const client = await getOpenPaymentsClient()
     if (!client) throw new Error("No client")
@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
       }
     )
 
-    if (!isPendingGrant(continuedGrant) && continuedGrant.access_token) {
+    if (!isPendingGrant(continuedGrant) && (continuedGrant as any).access_token) {
       const buyerWalletAddress = await client.walletAddress.get({
         url: formatWalletPointer(process.env.WALLET_ADDRESS!)
       })
@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
       await client.outgoingPayment.create(
         {
           url: buyerWalletAddress.resourceServer,
-          accessToken: continuedGrant.access_token.value
+          accessToken: (continuedGrant as any).access_token.value
         },
         {
           walletAddress: buyerWalletAddress.id,

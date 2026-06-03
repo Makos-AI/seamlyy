@@ -22,7 +22,7 @@ export default function RegisterPage() {
     setError("")
     setLoading(true)
 
-    const result = await registerUser({ name, email, password, role })
+    const result = await registerUser({ name, email, password, role: role as any })
 
     if (result.error) {
       setError(result.error)
