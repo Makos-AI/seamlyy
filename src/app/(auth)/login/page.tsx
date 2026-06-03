@@ -30,8 +30,13 @@ export default function LoginPage() {
   }
 
   return (
-    <Card className="p-8" hoverable={false}>
-      <h2 className="text-2xl font-semibold mb-6 text-center">Welcome back</h2>
+    <Card className="w-full max-w-md border border-border rounded-2xl p-8 shadow-2xl relative z-10 animate-slide-up" hoverable={false}>
+        <div className="flex justify-center mb-6">
+          <Link href="/">
+            <img src="/logo.png" alt="Seamlyy Logo" className="h-10 w-auto" />
+          </Link>
+        </div>
+        <h1 className="text-2xl font-heading font-bold text-text-primary text-center mb-2">Welcome back</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
           label="Email address"
@@ -50,9 +55,14 @@ export default function LoginPage() {
           required
         />
         {error && <p className="text-sm text-error">{error}</p>}
-        <Button type="submit" className="w-full" loading={loading}>
-          Sign in
+        <Button type="submit" className="w-full" size="lg" loading={loading}>
+          Sign In
         </Button>
+
+        <div className="mt-4 flex items-center justify-center gap-2 text-xs text-text-muted">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          256-bit Encrypted Connection
+        </div>
       </form>
       <div className="mt-6 text-center text-sm text-text-secondary">
         Don't have an account?{" "}

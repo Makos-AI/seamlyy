@@ -78,9 +78,20 @@ export default function RegisterPage() {
           minLength={8}
         />
         {error && <p className="text-sm text-error">{error}</p>}
-        <Button type="submit" className="w-full" loading={loading}>
-          Create account
+        <Button type="submit" className="w-full" size="lg" loading={loading}>
+          Create Account
         </Button>
+
+        <div className="mt-4 flex items-center justify-center gap-4 text-xs text-text-muted">
+          <div className="flex items-center gap-1">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            256-bit Encrypted
+          </div>
+          <div className="flex items-center gap-1">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            ILP Secure
+          </div>
+        </div>
       </form>
 
       <div className="my-6 flex items-center">

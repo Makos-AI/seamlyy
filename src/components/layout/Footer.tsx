@@ -6,8 +6,8 @@ export function Footer() {
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="md:col-span-1">
-            <Link href="/" className="text-2xl font-heading font-bold text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-hover">
-              Seamlyy
+            <Link href="/" className="inline-block mb-4">
+              <img src="/logo.png" alt="Seamlyy Logo" className="h-8 w-auto" />
             </Link>
             <p className="mt-4 text-sm text-text-secondary">
               The open marketplace for digital and physical art, powered by Open Payments.
@@ -41,7 +41,10 @@ export function Footer() {
         <div className="border-t border-border mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-text-muted">
           <p>&copy; {new Date().getFullYear()} Seamlyy. All rights reserved.</p>
           <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1">Powered by <a href="https://openpayments.dev" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">Open Payments</a></span>
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-bg-secondary border border-border rounded-lg shadow-sm">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              <span className="text-xs font-medium">Powered securely by <a href="https://openpayments.dev" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">Open Payments</a></span>
+            </div>
           </div>
         </div>
       </div>

@@ -37,16 +37,18 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
               </Badge>
             </div>
 
-            <div className="bg-bg-secondary border border-border rounded-2xl p-6 mb-8">
+            <div className="bg-bg-secondary border border-border rounded-2xl p-6 mb-8 relative">
               <p className="text-sm text-text-secondary mb-2">Price</p>
               <p className="text-3xl font-semibold text-text-primary mb-6">
                 {artwork.price ? `$${artwork.price.toString()}` : 'N/A'}
               </p>
 
               {artwork.status === 'FIXED_PRICE' && (
-                <Button className="w-full" size="lg">
-                  Purchase Artwork
-                </Button>
+                <div className="fixed bottom-0 left-0 right-0 p-4 bg-bg-card/90 backdrop-blur-md border-t border-border z-50 md:absolute md:bottom-auto md:left-auto md:right-auto md:p-0 md:bg-transparent md:backdrop-blur-none md:border-none md:z-auto md:w-full">
+                  <Button className="w-full h-14 text-lg shadow-[0_0_20px_rgba(124,92,252,0.4)] transition-shadow hover:shadow-[0_0_30px_rgba(124,92,252,0.6)]">
+                    Acquire Artwork
+                  </Button>
+                </div>
               )}
             </div>
 

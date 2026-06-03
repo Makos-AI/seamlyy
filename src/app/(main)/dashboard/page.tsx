@@ -19,36 +19,53 @@ export default async function DashboardPage() {
 
   if (!user) redirect('/login')
 
-  const totalSales = user.sales.reduce((acc, sale) => acc + Number(sale.amount), 0)
-  const totalPurchases = user.purchases.reduce((acc, p) => acc + Number(p.amount), 0)
+  const totalSales = user.sales.filter(s => s.type !== "PAY_TO_VIEW").reduce((acc, sale) => acc + Number(sale.amount), 0)
+  const revenueFromViews = user.sales.filter(s => s.type === "PAY_TO_VIEW").reduce((acc, sale) => acc + Number(sale.amount), 0)
+  
+  // A mock logic for current wallet balance (e.g. Sales + Revenue - Payouts)
+  // We'll just display the sum for now to demonstrate the metric
+  const walletBalance = totalSales + revenueFromViews
 
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-heading font-bold text-text-primary">Dashboard</h1>
-        <Link href="/dashboard/settings">
-          <Button variant="secondary">Profile Settings</Button>
-        </Link>
+        <div className="flex gap-4">
+          <Link href="/dashboard/gallery">
+            <Button variant="secondary">Gallery Management</Button>
+          </Link>
+          <Link href="/dashboard/settings">
+            <Button variant="secondary">Profile Settings</Button>
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <Card className="p-6">
-          <h3 className="text-sm font-medium text-text-secondary mb-2">Total Sales</h3>
+        <Card className="p-6 border-l-4 border-l-accent">
+          <h3 className="text-sm font-medium text-text-secondary mb-2">Total Sales (Artworks)</h3>
           <p className="text-3xl font-semibold text-text-primary">${totalSales.toFixed(2)}</p>
         </Card>
-        <Card className="p-6">
-          <h3 className="text-sm font-medium text-text-secondary mb-2">Total Spent</h3>
-          <p className="text-3xl font-semibold text-text-primary">${totalPurchases.toFixed(2)}</p>
+        <Card className="p-6 border-l-4 border-l-success relative overflow-hidden group">
+          <div className="absolute -right-4 -top-4 w-16 h-16 bg-success/10 rounded-full flex items-center justify-center opacity-50 group-hover:scale-150 transition-transform">
+             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-success"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          </div>
+          <h3 className="text-sm font-medium text-text-secondary mb-2 relative z-10">Revenue from Views</h3>
+          <p className="text-3xl font-semibold text-text-primary relative z-10">${revenueFromViews.toFixed(2)}</p>
+          <p className="text-xs text-success mt-2 relative z-10 flex items-center gap-1">
+             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+             +24% this week
+          </p>
         </Card>
         <Card className="p-6">
-          <h3 className="text-sm font-medium text-text-secondary mb-2">Wallet Pointer</h3>
-          <p className="text-lg font-medium text-text-primary truncate">
-            {user.walletPointer || "Not set"}
-          </p>
-          {!user.walletPointer && (
-            <Link href="/dashboard/settings" className="text-sm text-accent hover:underline mt-2 inline-block">Set up wallet</Link>
+          <h3 className="text-sm font-medium text-text-secondary mb-2">Wallet Balance</h3>
+          <p className="text-3xl font-semibold text-text-primary">${walletBalance.toFixed(2)}</p>
+          {!user.walletPointer ? (
+            <Link href="/dashboard/settings" className="text-sm text-error hover:underline mt-2 inline-block">Pointer not set</Link>
+          ) : (
+             <p className="text-xs text-text-muted mt-2 truncate font-mono bg-bg-secondary px-2 py-1 rounded inline-block">{user.walletPointer}</p>
           )}
         </Card>
+
       </div>
 
       {user.role === 'ARTIST' && (

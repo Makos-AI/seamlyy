@@ -77,11 +77,21 @@ export default async function ProfilePage({ params }: { params: { id: string } }
           <section>
             <h2 className="text-2xl font-heading font-semibold text-text-primary mb-6">Premium Exhibitions</h2>
             {user.galleries.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {user.galleries.map((gallery) => (
                   <Link key={gallery.id} href={`/gallery/${gallery.id}`}>
-                    <Card className="overflow-hidden group h-full">
-                      <div className="relative aspect-[4/3] overflow-hidden bg-bg-tertiary">
+                    <Card className={`overflow-hidden group h-full flex flex-col ${gallery.accessFee > 0 ? 'border border-accent/50 hover:shadow-[0_0_15px_rgba(124,92,252,0.3)] transition-all relative' : ''}`}>
+                      {gallery.accessFee > 0 && (
+                        <div className="absolute top-4 right-4 z-10 group/tooltip">
+                          <div className="w-8 h-8 rounded-full bg-bg-glass backdrop-blur flex items-center justify-center border border-accent text-accent">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                          </div>
+                          <div className="absolute top-full right-0 mt-2 w-48 p-2 bg-bg-card border border-border rounded-lg shadow-xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all text-xs text-text-secondary">
+                            Web Monetization Enabled: Seamlessly support the artist as you view.
+                          </div>
+                        </div>
+                      )}
+                      <div className="relative aspect-video overflow-hidden bg-bg-tertiary">
                         <img src={gallery.coverImageUrl} alt={gallery.title} className="w-full h-full object-cover blur-sm transition-transform duration-500 group-hover:scale-105" />
                         <div className="absolute inset-0 bg-bg-primary/20 flex items-center justify-center">
                           <div className="bg-bg-glass backdrop-blur-md border border-border px-4 py-2 rounded-full flex items-center gap-2">
