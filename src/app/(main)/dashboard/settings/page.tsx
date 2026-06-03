@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useSession } from "next-auth/react"
+import { useSession } from "@/lib/auth-client"
 import { Input, Button, useToast } from "@/components/ui"
 import { updateProfile } from "@/actions/user"
 import { useRouter } from "next/navigation"

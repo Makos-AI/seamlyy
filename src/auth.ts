@@ -1,70 +1,92 @@
-import NextAuth from "next-auth"
-import Google from "next-auth/providers/google"
-import Credentials from "next-auth/providers/credentials"
-import { PrismaAdapter } from "@auth/prisma-adapter"
-import { prisma } from "@/lib/prisma"
-import bcrypt from "bcryptjs"
-import { type DefaultSession } from "next-auth"
+import { cookies } from "next/headers"
+import { redirect } from "next/navigation"
+import { NextRequest } from "next/server"
 
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string
-      role: string
-    } & DefaultSession["user"]
+const HARDCODED_USERS = [
+  { id: "artist-1", email: "artist1@example.com", password: "password123", name: "Amara Nnachi", role: "ARTIST" },
+  { id: "collector-1", email: "collector@example.com", password: "password123", name: "Sarah Jenkins", role: "VIEWER" }
+]
+
+export const handlers = {
+  GET: () => new Response("Mock Auth Active", { status: 200 }),
+  POST: () => new Response("Mock Auth Active", { status: 200 })
+}
+
+export function auth(...args: any[]) {
+  // If it's a middleware wrapper (auth(callback))
+  if (args.length === 1 && typeof args[0] === "function") {
+    const callback = args[0]
+    return async (req: NextRequest) => {
+      const cookieStore = await cookies()
+      const sessionCookie = cookieStore.get("seamlyy_session")?.value
+      let session = null
+      if (sessionCookie) {
+        try {
+          session = { user: JSON.parse(decodeURIComponent(sessionCookie)) }
+        } catch {}
+      }
+
+      // Attach session to request
+      const mockReq = req as any
+      mockReq.auth = session
+
+      return callback(mockReq)
+    }
   }
-  interface User {
-    role?: string
+
+  // If it's a session getter (await auth())
+  return getSession()
+}
+
+async function getSession() {
+  const cookieStore = await cookies()
+  const sessionCookie = cookieStore.get("seamlyy_session")?.value
+  if (!sessionCookie) return null
+
+  try {
+    const user = JSON.parse(decodeURIComponent(sessionCookie))
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        image: user.image || null
+      }
+    }
+  } catch {
+    return null
   }
 }
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(prisma),
-  session: { strategy: "jwt" },
-  providers: [
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    }),
-    Credentials({
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null
+export async function signIn(provider: string, options: any) {
+  if (provider !== "credentials") {
+    throw new Error("Only credentials provider is supported in mock auth")
+  }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
-        })
+  const { email, password, redirectTo } = options
+  const user = HARDCODED_USERS.find(u => u.email === email && u.password === password)
+  
+  if (!user) {
+    throw new Error("CredentialsSignin")
+  }
 
-        if (!user || !user.hashedPassword) return null
+  const cookieStore = await cookies()
+  cookieStore.set("seamlyy_session", JSON.stringify({
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role
+  }), { path: "/" })
 
-        const isValid = await bcrypt.compare(
-          credentials.password as string,
-          user.hashedPassword
-        )
+  if (redirectTo) {
+    redirect(redirectTo)
+  }
+  return { success: true }
+}
 
-        if (!isValid) return null
-
-        return user
-      },
-    }),
-  ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id
-        token.role = user.role
-      }
-      return token
-    },
-    async session({ session, token }) {
-      if (token?.id) {
-        session.user.id = token.id as string
-        session.user.role = token.role as string
-      }
-      return session
-    },
-  },
-})
+export async function signOut() {
+  const cookieStore = await cookies()
+  cookieStore.delete("seamlyy_session")
+  redirect("/")
+}

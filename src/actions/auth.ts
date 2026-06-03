@@ -54,7 +54,7 @@ const loginSchema = z.object({
   password: z.string()
 })
 
-export async function loginUser(data: z.infer<typeof loginSchema>) {
+export async function loginUser(data: z.infer<typeof loginSchema>, callbackUrl?: string) {
   const parsed = loginSchema.safeParse(data)
   
   if (!parsed.success) {
@@ -65,7 +65,7 @@ export async function loginUser(data: z.infer<typeof loginSchema>) {
     await signIn("credentials", {
       email: parsed.data.email,
       password: parsed.data.password,
-      redirectTo: "/dashboard"
+      redirectTo: callbackUrl || "/"
     })
     return { success: true }
   } catch (error: any) {

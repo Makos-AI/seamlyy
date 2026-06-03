@@ -1,13 +1,17 @@
 "use client"
 
 import * as React from "react"
+import { Suspense } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Card, Input, Button } from "@/components/ui"
 import { loginUser } from "@/actions/auth"
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const callbackUrl = searchParams.get("callbackUrl") || "/"
+  
   const [email, setEmail] = React.useState("")
   const [password, setPassword] = React.useState("")
   const [loading, setLoading] = React.useState(false)
@@ -19,13 +23,13 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      const result = await loginUser({ email, password })
+      const result = await loginUser({ email, password }, callbackUrl)
 
       if (result?.error) {
         setError(result.error)
         setLoading(false)
       } else {
-        router.push("/dashboard")
+        router.push(callbackUrl)
         router.refresh()
       }
     } catch (err) {
@@ -82,5 +86,17 @@ export default function LoginPage() {
         </Link>
       </p>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="w-full max-w-md mx-auto text-center py-20">
+        <p className="text-text-secondary">Loading...</p>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   )
 }

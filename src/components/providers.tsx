@@ -1,5 +1,5 @@
 "use client"
-import { SessionProvider } from "next-auth/react"
+import { SessionProvider } from "@/lib/auth-client"
 import { ToastProvider } from "./ui"
 import { ThemeProvider } from "next-themes"
 

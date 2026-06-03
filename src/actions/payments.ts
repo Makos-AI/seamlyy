@@ -158,7 +158,7 @@ import { redirect } from "next/navigation"
 export async function buyArtworkAction(artworkId: string) {
   const session = await auth()
   if (!session?.user?.id) {
-    redirect("/login")
+    redirect(`/login?callbackUrl=/artwork/${artworkId}`)
   }
 
   const artwork = await prisma.artwork.findUnique({
@@ -182,7 +182,7 @@ export async function buyArtworkAction(artworkId: string) {
 export async function unlockGalleryAction(galleryId: string) {
   const session = await auth()
   if (!session?.user?.id) {
-    redirect("/login")
+    redirect(`/login?callbackUrl=/gallery/${galleryId}`)
   }
 
   const gallery = await prisma.gallery.findUnique({

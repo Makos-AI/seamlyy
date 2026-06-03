@@ -32,7 +32,7 @@ import { revalidatePath } from "next/cache"
 export async function followArtistAction(followingId: string) {
   const session = await auth()
   if (!session?.user?.id) {
-    redirect("/login")
+    redirect(`/login?callbackUrl=/profile/${followingId}`)
   }
 
   const followerId = session.user.id

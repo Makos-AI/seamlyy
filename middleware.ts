@@ -8,10 +8,6 @@ export default auth((req) => {
   if (isDashboardRoute && !isLoggedIn) {
     return Response.redirect(new URL('/login', req.nextUrl))
   }
-
-  if (isAuthRoute && isLoggedIn) {
-    return Response.redirect(new URL('/dashboard', req.nextUrl))
-  }
 })
 
 export const config = {

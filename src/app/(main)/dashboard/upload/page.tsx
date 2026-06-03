@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { useSession } from "next-auth/react"
+import { useSession } from "@/lib/auth-client"
 import { Card, Input, Button, useToast, Badge } from "@/components/ui"
 import { Categories } from "@/types"
 
