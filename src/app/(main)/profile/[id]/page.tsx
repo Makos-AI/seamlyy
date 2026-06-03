@@ -2,9 +2,12 @@ import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
 import { Avatar, Badge, Card, Button } from "@/components/ui"
 import Link from "next/link"
+import { auth } from "@/auth"
+import { followArtistAction } from "@/actions/user"
 
 export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
+  const session = await auth()
   const user = await prisma.user.findUnique({
     where: { id },
     include: {
@@ -18,6 +21,10 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   })
 
   if (!user) return notFound()
+
+  const isFollowing = session?.user?.id 
+    ? user.followers.some(f => f.followerId === session.user.id)
+    : false
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -41,8 +48,11 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
           </div>
         </div>
         <div>
-          {/* Note: In a real app, this button would trigger a server action to follow */}
-          <Button>Follow</Button>
+          <form action={followArtistAction.bind(null, user.id)}>
+            <Button type="submit" variant={isFollowing ? "secondary" : "primary"}>
+              {isFollowing ? "Unfollow" : "Follow"}
+            </Button>
+          </form>
         </div>
       </div>
 

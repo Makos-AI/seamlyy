@@ -25,7 +25,7 @@ async function main() {
       hashedPassword,
       bio: 'Contemporary African artist exploring the intersection of tradition and futuristic aesthetics.',
       walletPointer: '$rafiki.money/p/amara',
-      image: 'https://images.unsplash.com/photo-1531123897727-8f129e1bf98c?q=80&w=250&auto=format&fit=crop'
+      image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=250&auto=format&fit=crop'
     }
   })
 
@@ -75,7 +75,7 @@ async function main() {
     }
   })
 
-  // Create Artworks for Gallery 1
+  // Create Artworks for Gallery 1 (Neon Ancestry)
   await prisma.artwork.create({
     data: {
       artistId: artist1.id,
@@ -106,7 +106,22 @@ async function main() {
     }
   })
 
-  // Create Artworks for Gallery 2
+  await prisma.artwork.create({
+    data: {
+      artistId: artist1.id,
+      galleryId: gallery1.id,
+      title: 'Ethereal Whispers',
+      description: 'Vibrations of ancestral spirits whispering into the modern era.',
+      medium: 'Digital Painting',
+      price: 850.00,
+      status: 'FIXED_PRICE',
+      thumbnailUrl: '/art/artwork2.jpg',
+      thumbnailKey: 'art6_thumb',
+      highResKey: 'art6_high'
+    }
+  })
+
+  // Create Artworks for Gallery 2 (Digital Genesis)
   await prisma.artwork.create({
     data: {
       artistId: artist2.id,
@@ -125,6 +140,37 @@ async function main() {
   await prisma.artwork.create({
     data: {
       artistId: artist2.id,
+      galleryId: gallery2.id,
+      title: 'Cyber Serengeti II',
+      description: 'Exploring the boundary-pushing futuristic landscapes of Africa.',
+      medium: 'Generative Art',
+      price: 2200.00,
+      status: 'FIXED_PRICE',
+      thumbnailUrl: '/art/artwork3.jpg',
+      thumbnailKey: 'art7_thumb',
+      highResKey: 'art7_high'
+    }
+  })
+
+  await prisma.artwork.create({
+    data: {
+      artistId: artist2.id,
+      galleryId: gallery2.id,
+      title: 'Unbound Spirit II',
+      description: 'A striking study on modern composition and digital textures.',
+      medium: 'Photography & Digital',
+      price: 450.00,
+      status: 'FIXED_PRICE',
+      thumbnailUrl: '/art/artwork4.jpg',
+      thumbnailKey: 'art8_thumb',
+      highResKey: 'art8_high'
+    }
+  })
+
+  // Standalone artworks
+  await prisma.artwork.create({
+    data: {
+      artistId: artist2.id,
       title: 'Unbound Spirit',
       description: 'A standalone piece not bound to any gallery.',
       medium: 'Photography',
@@ -133,6 +179,20 @@ async function main() {
       thumbnailUrl: 'https://images.unsplash.com/photo-1531913764164-f85c52e6e654?q=80&w=800&auto=format&fit=crop',
       thumbnailKey: 'art4_thumb',
       highResKey: 'art4_high'
+    }
+  })
+
+  await prisma.artwork.create({
+    data: {
+      artistId: artist2.id,
+      title: 'Luminous Rhythm',
+      description: 'A standalone piece exploring the vibrant flow of modern African music and movement.',
+      medium: 'Mixed Media',
+      price: 1200.00,
+      status: 'FIXED_PRICE',
+      thumbnailUrl: '/art/artwork5.jpg',
+      thumbnailKey: 'art9_thumb',
+      highResKey: 'art9_high'
     }
   })
 

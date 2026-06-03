@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
 import { Avatar, Badge, Button, Card } from "@/components/ui"
 import Link from "next/link"
+import { buyArtworkAction } from "@/actions/payments"
 
 export default async function ArtworkPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -46,9 +47,11 @@ export default async function ArtworkPage({ params }: { params: Promise<{ id: st
 
               {artwork.status === 'FIXED_PRICE' && (
                 <div className="fixed bottom-0 left-0 right-0 p-4 bg-bg-card/90 backdrop-blur-md border-t border-border z-50 md:absolute md:bottom-auto md:left-auto md:right-auto md:p-0 md:bg-transparent md:backdrop-blur-none md:border-none md:z-auto md:w-full">
-                  <Button className="w-full h-14 text-lg shadow-[0_0_20px_rgba(124,92,252,0.4)] transition-shadow hover:shadow-[0_0_30px_rgba(124,92,252,0.6)]">
-                    Acquire Artwork
-                  </Button>
+                  <form action={buyArtworkAction.bind(null, artwork.id)}>
+                    <Button type="submit" className="w-full h-14 text-lg shadow-[0_0_20px_rgba(124,92,252,0.4)] transition-shadow hover:shadow-[0_0_30px_rgba(124,92,252,0.6)]">
+                      Acquire Artwork
+                    </Button>
+                  </form>
                 </div>
               )}
             </div>

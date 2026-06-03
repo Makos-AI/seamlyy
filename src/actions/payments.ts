@@ -19,7 +19,29 @@ export async function initiatePayment(params: {
   try {
     const client = await getOpenPaymentsClient()
     if (!client) {
-      return { error: "Open Payments client not configured." }
+      const sellerId = type === 'ARTWORK' 
+        ? (await prisma.artwork.findUnique({where: {id: targetId}}))?.artistId! 
+        : (await prisma.gallery.findUnique({where: {id: targetId}}))?.artistId!
+
+      await prisma.transaction.create({
+        data: {
+          id: txId,
+          buyerId: session.user.id,
+          sellerId: sellerId,
+          artworkId: type === 'ARTWORK' ? targetId : null,
+          galleryId: type === 'GALLERY' ? targetId : null,
+          type: type === 'ARTWORK' ? 'ONE_TIME_PURCHASE' : 'PAY_TO_VIEW',
+          amount,
+          status: 'PENDING',
+          openPaymentsUrl: `/payment/simulate?txId=${txId}`
+        }
+      })
+
+      return {
+        success: true,
+        redirectUrl: `/payment/simulate?txId=${txId}`,
+        transactionId: txId
+      }
     }
 
     const formattedSellerWallet = formatWalletPointer(sellerWalletPointer)
@@ -128,5 +150,55 @@ export async function initiatePayment(params: {
   } catch (error) {
     console.error("Payment error:", error)
     return { error: "Failed to initiate Open Payments transaction" }
+  }
+}
+
+import { redirect } from "next/navigation"
+
+export async function buyArtworkAction(artworkId: string) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    redirect("/login")
+  }
+
+  const artwork = await prisma.artwork.findUnique({
+    where: { id: artworkId },
+    include: { artist: true }
+  })
+  if (!artwork || !artwork.price) return
+
+  const res = await initiatePayment({
+    targetId: artworkId,
+    type: 'ARTWORK',
+    amount: Number(artwork.price),
+    sellerWalletPointer: artwork.artist.walletPointer || '$rafiki.money/p/amara'
+  })
+
+  if (res.redirectUrl) {
+    redirect(res.redirectUrl)
+  }
+}
+
+export async function unlockGalleryAction(galleryId: string) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    redirect("/login")
+  }
+
+  const gallery = await prisma.gallery.findUnique({
+    where: { id: galleryId },
+    include: { artist: true }
+  })
+  if (!gallery) return
+
+  const res = await initiatePayment({
+    targetId: galleryId,
+    type: 'GALLERY',
+    amount: Number(gallery.accessFee),
+    sellerWalletPointer: gallery.artist.walletPointer || '$rafiki.money/p/amara'
+  })
+
+  if (res.redirectUrl) {
+    redirect(res.redirectUrl)
   }
 }

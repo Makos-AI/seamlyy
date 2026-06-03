@@ -18,14 +18,19 @@ export default function LoginPage() {
     setError("")
     setLoading(true)
 
-    const result = await loginUser({ email, password })
+    try {
+      const result = await loginUser({ email, password })
 
-    if (result.error) {
-      setError(result.error)
+      if (result?.error) {
+        setError(result.error)
+        setLoading(false)
+      } else {
+        router.push("/dashboard")
+        router.refresh()
+      }
+    } catch (err) {
+      // Succeeded and redirect error bubbled up, or other error occurred
       setLoading(false)
-    } else {
-      router.push("/dashboard")
-      router.refresh()
     }
   }
 

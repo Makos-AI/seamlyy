@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import { Avatar, Button, Card, Badge } from "@/components/ui"
 import Link from "next/link"
 import { Metadata, ResolvingMetadata } from "next"
+import { unlockGalleryAction } from "@/actions/payments"
 
 export async function generateMetadata(
   { params }: { params: Promise<{ id: string }> },
@@ -110,9 +111,11 @@ export default async function GalleryPage({ params }: { params: Promise<{ id: st
                 Gain permanent access to this premium gallery to view all high-resolution artworks curated by {gallery.artist.name}.
               </p>
               <div className="flex flex-col items-center justify-center gap-4">
-                <Button size="lg" className="px-12">
-                  Unlock for ${gallery.accessFee.toString()}
-                </Button>
+                <form action={unlockGalleryAction.bind(null, gallery.id)}>
+                  <Button type="submit" size="lg" className="px-12">
+                    Unlock for ${gallery.accessFee.toString()}
+                  </Button>
+                </form>
                 <p className="text-xs text-text-muted flex items-center gap-1">
                   Powered by Open Payments
                 </p>

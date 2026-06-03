@@ -1,4 +1,3 @@
-import { Categories } from "@/types"
 import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 import { Card, Badge } from "@/components/ui"
@@ -18,16 +17,7 @@ export default async function ExplorePage() {
         <p className="text-text-secondary">Browse categories or discover pieces from talented artists worldwide.</p>
       </div>
 
-      {/* Categories */}
-      <div className="flex flex-wrap gap-2 mb-10">
-        {Categories.map(category => (
-          <Link key={category} href={`/search?category=${encodeURIComponent(category)}`}>
-            <div className="px-4 py-2 text-sm font-medium rounded-lg border border-border bg-bg-secondary text-text-secondary hover:border-gold/50 hover:text-gold transition-all cursor-pointer">
-              {category}
-            </div>
-          </Link>
-        ))}
-      </div>
+
 
       {/* All artworks */}
       {artworks.length > 0 ? (

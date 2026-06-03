@@ -9,6 +9,6 @@ export async function GET() {
     return NextResponse.redirect(new URL("/explore", process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"))
   }
 
-  // If not signed up, take them to register
-  return NextResponse.redirect(new URL("/register", process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"))
+  // If not signed up, take them to login (sign in page)
+  return NextResponse.redirect(new URL("/login", process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"))
 }

@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs"
 import { z } from "zod"
 import { signIn } from "@/auth"
 import { UserRole } from "@/types"
+import { AuthError } from "next-auth"
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -64,10 +65,13 @@ export async function loginUser(data: z.infer<typeof loginSchema>) {
     await signIn("credentials", {
       email: parsed.data.email,
       password: parsed.data.password,
-      redirect: false
+      redirectTo: "/dashboard"
     })
     return { success: true }
-  } catch (error) {
+  } catch (error: any) {
+    if (error && (error.message === "NEXT_REDIRECT" || error.digest?.startsWith("NEXT_REDIRECT"))) {
+      throw error
+    }
     return { error: "Invalid email or password" }
   }
 }

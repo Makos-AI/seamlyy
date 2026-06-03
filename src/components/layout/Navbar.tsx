@@ -9,7 +9,7 @@ import { useTheme } from "next-themes"
 export function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
   const [search, setSearch] = React.useState("")
@@ -88,7 +88,12 @@ export function Navbar() {
             </button>
           )}
 
-          {session ? (
+          {status === 'loading' ? (
+            <div className="flex items-center gap-3">
+              <div className="w-16 h-8 rounded bg-bg-secondary animate-pulse hidden sm:block" />
+              <div className="w-24 h-8 rounded bg-bg-secondary animate-pulse" />
+            </div>
+          ) : session ? (
             <>
               <Link href="/dashboard" className="text-sm font-medium text-text-secondary hover:text-text-primary hidden sm:block transition-colors">
                 Dashboard
@@ -117,11 +122,17 @@ export function Navbar() {
             </>
           ) : (
             <>
-              <Link href="/login" className="text-sm font-medium text-text-secondary hover:text-text-primary hidden sm:block transition-colors">
+              <Link
+                href="/login"
+                className="text-sm font-medium text-text-secondary hover:text-text-primary hidden sm:block transition-colors"
+              >
                 Log in
               </Link>
-              <Link href="/register">
-                <Button size="sm" className="border-gold/50 text-gold hover:bg-gold/10" variant="secondary">Get Started</Button>
+              <Link
+                href="/register"
+                className="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-colors border border-gold/50 text-gold hover:bg-gold/10"
+              >
+                Get Started
               </Link>
             </>
           )}

@@ -85,6 +85,18 @@ body {
   color: var(--color-text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 600ms cubic-bezier(0.4, 0, 0.2, 1), 
+              color 600ms cubic-bezier(0.4, 0, 0.2, 1), 
+              border-color 600ms cubic-bezier(0.4, 0, 0.2, 1), 
+              box-shadow 600ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Smooth transitions for theme-dependent components */
+header, footer, nav, main, section, article, aside, .card, .glass, button, input, select, textarea, h1, h2, h3, h4, p, span, a {
+  transition: background-color 600ms cubic-bezier(0.4, 0, 0.2, 1), 
+              color 600ms cubic-bezier(0.4, 0, 0.2, 1), 
+              border-color 600ms cubic-bezier(0.4, 0, 0.2, 1), 
+              box-shadow 600ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 ::-webkit-scrollbar { width: 6px; }

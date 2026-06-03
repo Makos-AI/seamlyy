@@ -43,11 +43,17 @@ export default async function HomePage() {
                 Explore galleries, connect with creators, and enjoy seamless payments from anywhere in the world.
               </p>
               <div className="flex items-center gap-4">
-                <Link href="/explore">
-                  <Button variant="secondary" size="lg">Explore Art</Button>
+                <Link 
+                  href="/explore" 
+                  className="inline-flex items-center justify-center rounded-lg font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gold/50 focus:ring-offset-2 focus:ring-offset-bg-primary border border-border bg-transparent hover:bg-bg-tertiary text-text-primary hover:border-border-hover active:scale-[0.98] h-12 px-8 text-base cursor-pointer"
+                >
+                  Explore Art
                 </Link>
-                <Link href="/register">
-                  <Button variant="buy" size="lg">Become an Artist</Button>
+                <Link 
+                  href="/login" 
+                  className="inline-flex items-center justify-center rounded-lg font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gold/50 focus:ring-offset-2 focus:ring-offset-bg-primary bg-success text-white hover:bg-success/90 hover:shadow-lg hover:shadow-success/25 active:scale-[0.98] h-12 px-8 text-base cursor-pointer"
+                >
+                  Become an Artist
                 </Link>
               </div>
             </div>
@@ -75,13 +81,54 @@ export default async function HomePage() {
           {/* Stats Row */}
           <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
-              { icon: '👤', label: 'Artists', value: `${artistCount > 0 ? artistCount : '1,250'}+` },
-              { icon: '🎨', label: 'Artworks', value: `${artworkCount > 0 ? artworkCount : '8,450'}+` },
-              { icon: '💎', label: 'Collectors', value: `${collectorCount > 0 ? collectorCount : '6,100'}+` },
-              { icon: '🌍', label: 'Countries', value: '90+' },
+              { 
+                icon: (
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gold">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                ), 
+                label: 'Artists', 
+                value: `${artistCount > 0 ? artistCount : '1,250'}+` 
+              },
+              { 
+                icon: (
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gold">
+                    <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 14.5 3 16.5 4.5 18.5L5.5 19.5C6.5 20.5 8 22 12 22Z"></path>
+                    <circle cx="7.5" cy="10.5" r="1.5" fill="currentColor"></circle>
+                    <circle cx="11.5" cy="7.5" r="1.5" fill="currentColor"></circle>
+                    <circle cx="16.5" cy="9.5" r="1.5" fill="currentColor"></circle>
+                    <circle cx="15.5" cy="14.5" r="1.5" fill="currentColor"></circle>
+                  </svg>
+                ), 
+                label: 'Artworks', 
+                value: `${artworkCount > 0 ? artworkCount : '8,450'}+` 
+              },
+              { 
+                icon: (
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gold">
+                    <path d="M6 3h12l4 6-10 12L2 9z"></path>
+                    <path d="M11 3 8 9l4 12 4-12-3-6"></path>
+                    <path d="M2 9h20"></path>
+                  </svg>
+                ), 
+                label: 'Collectors', 
+                value: `${collectorCount > 0 ? collectorCount : '6,100'}+` 
+              },
+              { 
+                icon: (
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gold">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                  </svg>
+                ), 
+                label: 'Countries', 
+                value: '90+' 
+              },
             ].map(stat => (
               <div key={stat.label} className="flex items-center gap-3 p-4 rounded-xl border border-border bg-bg-secondary/50">
-                <span className="text-2xl">{stat.icon}</span>
+                <span className="flex-shrink-0">{stat.icon}</span>
                 <div>
                   <p className="text-xl font-bold text-text-primary">{stat.value}</p>
                   <p className="text-xs text-text-muted">{stat.label}</p>
@@ -132,6 +179,48 @@ export default async function HomePage() {
               <p className="text-text-secondary">No artworks available yet.</p>
             </div>
           )}
+        </div>
+      </section>
+
+      {/* How it Works Section */}
+      <section className="py-20 px-4 border-t border-border bg-bg-secondary/20">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <Badge variant="premium" className="mb-4">Simple Setup</Badge>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-text-primary mb-4">How Seamlyy Works</h2>
+            <p className="text-text-secondary">The future of seamless art collection powered by Open Payments.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                num: "01",
+                title: "Connect",
+                desc: "Sign up and configure your Web Monetization Wallet Pointer. Artists use this to receive funds instantly, and collectors use it to make seamless purchases."
+              },
+              {
+                num: "02",
+                title: "Discover",
+                desc: "Browse through unique single artworks or curated premium exhibitions. When you find a piece you love, interaction is frictionless."
+              },
+              {
+                num: "03",
+                title: "Unlock & Own",
+                desc: "Authorize a micro-transaction directly from your wallet. Interledger handles the currency conversion and settlement instantly."
+              }
+            ].map((step, idx) => (
+              <Card key={idx} className="p-8 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                  <span className="text-8xl font-black font-heading text-gold">{step.num}</span>
+                </div>
+                <div className="w-10 h-10 rounded-lg bg-gold/10 text-gold flex items-center justify-center font-bold font-heading mb-6">
+                  {step.num}
+                </div>
+                <h3 className="text-xl font-bold text-text-primary mb-4 relative z-10">{step.title}</h3>
+                <p className="text-sm text-text-secondary leading-relaxed relative z-10">{step.desc}</p>
+              </Card>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -244,23 +333,38 @@ export default async function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
-                icon: "🌍",
+                icon: (
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                  </svg>
+                ),
                 title: "Pay From Everywhere",
                 desc: "We support borderless payments from any country. Say goodbye to international wire delays and banking barriers."
               },
               {
-                icon: "⚡",
+                icon: (
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gold">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                  </svg>
+                ),
                 title: "Instant Settlement",
                 desc: "Transactions clear in real-time. The moment you acquire an artwork or unlock a gallery, funds route directly to the creator."
               },
               {
-                icon: "💳",
+                icon: (
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-copper">
+                    <rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect>
+                    <line x1="2" y1="10" x2="22" y2="10"></line>
+                  </svg>
+                ),
                 title: "Interoperable Wallets",
                 desc: "Using Wallet Pointers, artists can receive payments directly into any standard ILP-compatible wallet, keeping transactions secure and decentralized."
               }
             ].map((feature, idx) => (
               <Card key={idx} className="p-8 border border-border bg-bg-card flex flex-col items-start gap-4">
-                <div className="text-4xl">{feature.icon}</div>
+                <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-bg-secondary border border-border">{feature.icon}</div>
                 <h3 className="text-lg font-bold text-text-primary">{feature.title}</h3>
                 <p className="text-sm text-text-secondary leading-relaxed">{feature.desc}</p>
               </Card>
