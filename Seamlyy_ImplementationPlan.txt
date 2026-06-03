@@ -1,0 +1,251 @@
+This is a comprehensive, 12-week (3-month) implementation plan designed to take the OpenArt platform from its current PRD state to a live MVP.
+
+To execute this efficiently, the plan assumes an Agile methodology with 2-week sprints, dividing the work across Design, Frontend, and Backend/DevOps tracks.
+
+---
+
+## Technical Stack Finalization
+
+Before kicking off Week 1, lock in the "or" decisions from the PRD to avoid mid-sprint pivots. Based on the requirements for rapid image rendering and relational data logic, the recommended stack is:
+
+* **Frontend:** Next.js (React) + Tailwind CSS (ideal for fast routing and image optimization).
+* **Backend:** Node.js with Express or NestJS (pairs well with Next.js).
+* **Database:** PostgreSQL (essential for strict transactional records and relational user/artwork joins).
+* **Storage:** AWS S3 (handling public buckets for thumbnails, private buckets for gated premium assets).
+
+---
+
+## Phase 1: Architecture & Prototyping (Weeks 1–2)
+
+**Goal:** De-risk the core technology and finalize the visual blueprints.
+
+* **Design Track:**
+* Create low-fidelity wireframes for the core screens: Home Feed, Artist Profile (Public/Premium tabs), Viewer Profile, and Upload Flow.
+* Design the high-fidelity UI for the **Checkout/Unlock modals** (crucial for building trust during the payment step).
+
+
+* **Backend & Infrastructure Track:**
+* Design the PostgreSQL database schema (Users, Artworks, Galleries, Transactions).
+* **Technical Spike (Highest Priority):** Build a standalone Proof of Concept (PoC) script integrating the Open Payments API. Validate that you can successfully query a wallet pointer, generate a quote, and simulate a successful payment.
+* Set up the repository, CI/CD pipelines, and development environments.
+
+
+
+## Phase 2: Foundation & User Management (Weeks 3–4)
+
+**Goal:** Establish user accounts, routing, and the fundamental application shell.
+
+* **Frontend Track:**
+* Initialize the Next.js project and component library.
+* Build the application shell (Navigation bar, routing structure, footer).
+* Develop the Login/Sign-up UI.
+* Create the basic Viewer and Artist Profile layouts (empty states).
+
+
+* **Backend Track:**
+* Implement user authentication (Email/Password + Google OAuth).
+* Create basic CRUD endpoints for User Profiles.
+* Implement the **Wallet Pointer verification logic** (ensuring users input a valid Open Payments `$wallet` address before they can save it to their profile).
+
+
+
+## Phase 3: Content Management & Discovery (Weeks 5–7)
+
+**Goal:** Allow artists to upload art, gate it behind premium tags, and allow viewers to browse.
+
+* **Frontend Track:**
+* Build the Artwork Upload form (image drag-and-drop, metadata inputs).
+* Implement the "Monetization Toggles" UI (Standard Listing vs. Premium Exhibition).
+* Develop the Home Feed (chronological list) and Category filters.
+* Build the image display components (blurred placeholders for locked art, high-res for public).
+
+
+* **Backend Track:**
+* Integrate AWS S3. Create endpoints for image uploads.
+* **Security Logic:** Configure S3 so public images generate standard URLs, but Premium Exhibition images generate temporary, 60-minute pre-signed URLs (returned *only* if the user has paid).
+* Build APIs for the Home Feed, Categories, and basic Search functionality.
+
+
+
+## Phase 4: The Payment Engine (Weeks 8–10)
+
+**Goal:** Connect the Open Payments infrastructure to the UI and handle financial state changes.
+
+* **Frontend Track:**
+* Build the "Buy Artwork" flow (One-Time Purchase) and shipping details form.
+* Build the "Unlock for $X" flow (Pay-to-View).
+* Implement loading states and success/failure UI for transactions.
+* Ensure the UI instantly swaps blurred images for high-res S3 images upon payment success without requiring a hard page refresh.
+
+
+* **Backend Track:**
+* Integrate the Open Payments API into the main codebase based on the Phase 1 spike.
+* **One-Time Purchase API:** Generate quotes, trigger GNAP authorization, and update artwork status to "Sold" upon success.
+* **Pay-to-View API:** Execute the micro-transaction, write a "Rights/Access" record to the database for that user, and return the secure S3 pre-signed URLs.
+
+
+
+## Phase 5: QA, Polish & Launch (Weeks 11–12)
+
+**Goal:** Ensure the platform is secure, bug-free, and ready for real users.
+
+* **Testing:**
+* Perform rigorous end-to-end testing on the payment flows using Open Payments sandbox/test wallets.
+* Test edge cases: insufficient funds, user closing the browser during authorization, and broken wallet pointers.
+
+
+* **Polish:**
+* Refine UI animations, especially the "unlocking" experience of premium galleries.
+* Set up automated email notifications (e.g., "Your art sold!", "Purchase receipt").
+
+
+* **Launch:**
+* Deploy the production database and backend.
+* Deploy the frontend (e.g., via Vercel).
+* Onboard a closed beta group of 5-10 artists to populate the platform before opening it to viewers.
+
+
+
+---
+
+### Key Risks & Mitigation
+
+| Risk | Impact | Mitigation Strategy |
+| --- | --- | --- |
+| **Open Payments Latency** | High | The Pay-to-View micro-transaction must feel instant. Execute the Phase 1 Technical Spike immediately to measure real-world API response times. Use optimistic UI updates if necessary. |
+| **Asset Theft** | Medium | Users inspecting the browser network tab to steal high-res premium art. Mitigate by strictly enforcing AWS S3 pre-signed URLs; never send the high-res file path to the frontend until payment is verified by the backend. |
+| **Scope Creep** | High | Feature requests from early beta testers. Mitigate by adhering strictly to the "Out of Scope" list in the PRD until V2. |
+
+
+
+Here is the PostgreSQL database schema designed specifically for the OpenArt MVP.
+
+This schema is optimized for relational integrity, securely separating public data from gated premium assets, and maintaining a strict ledger of Open Payments transactions.
+
+1. Custom Enumerated Types (Enums)
+First, we define strict categories for roles, artwork statuses, and transaction states.
+
+SQL
+-- User Roles
+CREATE TYPE user_role AS ENUM ('ARTIST', 'VIEWER');
+
+-- Artwork Availability Status
+CREATE TYPE artwork_status AS ENUM ('NOT_FOR_SALE', 'FIXED_PRICE', 'PREMIUM_LOCKED', 'SOLD');
+
+-- Transaction Types (distinguishes physical/digital buys from access unlocks)
+CREATE TYPE tx_type AS ENUM ('ONE_TIME_PURCHASE', 'PAY_TO_VIEW');
+
+-- Transaction Status
+CREATE TYPE tx_status AS ENUM ('PENDING', 'COMPLETED', 'FAILED');
+2. Core Entities
+SQL
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    role user_role NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255), -- Nullable if using Google OAuth
+    wallet_pointer VARCHAR(255) UNIQUE, -- e.g., $wallet.example.com/alice
+    
+    -- Profile Data
+    profile_picture_url TEXT,
+    bio TEXT,
+    location VARCHAR(100),
+    social_links JSONB, -- Flexible storage for Twitter, IG, website links
+    
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE galleries (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    artist_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    access_fee NUMERIC(10, 2) NOT NULL, -- e.g., 1.00 for micro-transactions
+    cover_image_key TEXT NOT NULL, -- S3 key for the blurred/public cover image
+    
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE artworks (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    artist_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    gallery_id UUID REFERENCES galleries(id) ON DELETE SET NULL, -- Null if standard listing
+    
+    -- Metadata
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    medium VARCHAR(100),
+    dimensions VARCHAR(100),
+    year_created INT,
+    
+    -- Monetization
+    status artwork_status DEFAULT 'NOT_FOR_SALE',
+    price NUMERIC(10, 2), -- Null if PREMIUM_LOCKED or NOT_FOR_SALE
+    
+    -- Asset Storage (Separating public from gated)
+    s3_thumbnail_key TEXT NOT NULL, -- Always public
+    s3_highres_key TEXT NOT NULL,   -- Kept private via S3 permissions, served via pre-signed URL
+    
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+3. Financial & Transaction Ledgers
+The transaction table is the source of truth for all Open Payments activity.
+
+SQL
+CREATE TABLE transactions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    buyer_id UUID NOT NULL REFERENCES users(id),
+    seller_id UUID NOT NULL REFERENCES users(id),
+    
+    -- What was purchased? (One of these will be populated, the other null)
+    artwork_id UUID REFERENCES artworks(id),
+    gallery_id UUID REFERENCES galleries(id),
+    
+    transaction_type tx_type NOT NULL,
+    amount NUMERIC(10, 2) NOT NULL,
+    currency VARCHAR(3) DEFAULT 'USD',
+    
+    -- Open Payments Data
+    open_payments_incoming_url TEXT NOT NULL,
+    status tx_status DEFAULT 'PENDING',
+    
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+4. Mapping & Relationship Tables
+These tables handle the many-to-many relationships for user rights, social interactions, and mood boards.
+
+SQL
+-- Rights Management: Tracks which viewers have unlocked which premium galleries
+CREATE TABLE gallery_access (
+    viewer_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    gallery_id UUID NOT NULL REFERENCES galleries(id) ON DELETE CASCADE,
+    transaction_id UUID NOT NULL REFERENCES transactions(id),
+    unlocked_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (viewer_id, gallery_id) -- Ensures a user can only unlock a gallery once
+);
+
+-- Viewer Profile: Saved Artworks (Mood board)
+CREATE TABLE saved_artworks (
+    viewer_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    artwork_id UUID NOT NULL REFERENCES artworks(id) ON DELETE CASCADE,
+    saved_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (viewer_id, artwork_id)
+);
+
+-- Social: Follower/Following network
+CREATE TABLE follows (
+    follower_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    following_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (follower_id, following_id),
+    CHECK (follower_id != following_id) -- Prevents a user from following themselves
+);
+Key Design Highlights for this Schema:
+Security by Design (s3_highres_key): The database directly supports the security requirement of the PRD. The application logic will only ever fetch the s3_highres_key if a record exists for that user in the gallery_access table or if the artwork status is PUBLIC.
+
+Flexible Asset Grouping: By making gallery_id nullable on the artworks table, an artwork can exist as a standalone "Standard Listing" or be grouped into a "Premium Exhibition."
+
+Idempotent Unlocks: The composite primary key (viewer_id, gallery_id) on the gallery_access table ensures that if a user accidentally clicks "Unlock" twice, the database will reject the duplicate entry, preventing double-billing errors in the UI.

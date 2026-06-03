@@ -1,0 +1,160 @@
+# Product Requirements Document (PRD): Seamlyy MVP
+
+**Document Version:** 1.0
+**Status:** Approved for MVP Development
+**Target Timeline:** 2-3 Months to Launch
+
+---
+
+## 1. Executive Summary & Core Objective
+
+The Open Payments Art Platform is a streamlined digital marketplace designed to validate a novel creator economy model.
+
+**Core Objective:** To validate that artists will utilize the platform to sell and display their artwork, and that viewers/collectors will adopt Open Payments for frictionless one-time purchases and micro-transactions (pay-to-view access).
+
+## 2. Target Audience & User Roles
+
+The platform serves a two-sided market:
+
+* **Artists (Supply):** Creators seeking alternative, low-friction methods to monetize their digital and physical artwork while building an audience.
+* **Viewers/Collectors (Demand):** Art enthusiasts and patrons willing to make direct purchases or pay small micro-amounts to access exclusive, gated content.
+
+---
+
+## 3. Scope Definition
+
+### 3.1. In Scope for MVP (V1)
+
+* User Authentication & Wallet Integration
+* Role-based User Profiles (Artist vs. Viewer)
+* Artwork Upload and Inventory Management
+* Basic Discovery (Chronological Feeds, Hardcoded Categories, Simple Search)
+* Payments: One-Time Purchases (Fixed Price) via Open Payments
+* Payments: Pay-to-View Micro-transactions for Premium Galleries via Open Payments
+
+### 3.2. Strictly Out of Scope (Do Not Build for V1)
+
+To ensure a rapid 2-3 month launch, the following features are explicitly excluded:
+
+* Auctions, bidding, or "Make an Offer" workflows.
+* Streaming payments (pay-per-minute/time-based Web Monetization).
+* Monthly recurring subscriptions or Patronage models.
+* Curator roles or user-generated public collections/boards.
+* Complex algorithmic feeds (e.g., "Trending," "Recommended for You").
+* In-app messaging (Users will rely on provided social links/email).
+* Advanced Analytics or seller dashboards.
+
+---
+
+## 4. Core Functional Requirements
+
+### Epic 1: Authentication, Onboarding & Profiles
+
+* **1.1 User Registration:** Users must be able to sign up via a simple Email/Password flow or Google OAuth.
+* **1.2 Wallet Setup:** Both Artists and Viewers must be able to link their Open Payments wallet pointer (e.g., `$[wallet.example.com/alice](https://wallet.example.com/alice)`). This is required to send or receive funds.
+* **1.3 Universal Profile Data:** All user profiles must display a Profile Picture, Bio, Location, Social Links, and Follower/Following counts.
+* **1.4 Artist Profile UI:**
+* **Tab 1 - Public Portfolio:** Free-to-view feed of artworks. Items here can be marked as "Not for Sale" or have a "Fixed Price".
+* **Tab 2 - Premium Exhibitions:** A section displaying locked/blurred galleries that require a pay-to-view fee.
+
+
+* **1.5 Viewer Profile UI:**
+* **Tab 1 - Saved Artworks:** A private mood board of liked/saved items.
+* **Tab 2 - Purchased/Unlocked:** A digital receipt book providing persistent access to purchased artworks and unlocked premium galleries.
+
+
+
+### Epic 2: Artwork & Gallery Management (Artist Flow)
+
+* **2.1 Upload Module:** Capability to upload high-resolution image files.
+* **2.2 Metadata Entry:** Form fields for Title, Description, Medium, Dimensions, and Year Created.
+* **2.3 Monetization Toggles (Crucial):** Upon upload, the artist must select a monetization route:
+* **Option A (Standard Listing):** Artist sets status to either `[Not for Sale]` or `[Fixed Price]` (e.g., $150).
+* **Option B (Premium Exhibition):** Artist groups 3–10 images into a single "Gallery" and sets a micro-transaction access fee (e.g., $1.00).
+
+
+
+### Epic 3: Discovery & Browsing
+
+* **3.1 Home Feed:** A simple chronological feed displaying "Recently Added" standard artworks and newly published Premium Galleries.
+* **3.2 Categories:** Hardcoded filtering options (e.g., Digital Art, Oil Paintings, Photography, Sculptures).
+* **3.3 Search:** A basic text search querying the database for Artist Names or Artwork Titles.
+
+### Epic 4: The Payments Engine (Open Payments)
+
+* **4.1 Method 1: One-Time Purchases (Fixed Price)**
+* System triggers an Open Payments quote when a viewer clicks "Buy Artwork".
+* System prompts the viewer to authorize the transfer for the full amount.
+* Upon success, funds are transferred directly to the Artist's wallet pointer.
+* System updates the artwork's database status and UI to "Sold".
+
+
+* **4.2 Method 2: Pay-to-View (Micro-transactions)**
+* System displays a blurred/locked cover for Premium Galleries.
+* Viewer clicks "Unlock Exhibition for $X.XX".
+* System triggers a seamless Open Payments micro-transaction.
+* Upon success, the system immediately unblurs/unlocks the gallery assets for that specific user's session and account.
+
+
+
+---
+
+## 5. Key User Flows
+
+### Flow 1: The Pay-to-View Unlock (Micro-transaction)
+
+1. Viewer navigates to the "Photography" category.
+2. Viewer selects an artist and views their profile.
+3. Viewer notices a locked gallery in Tab 2 titled *"Midnight in Tokyo - $1 Access"*.
+4. Viewer clicks the **"Unlock"** button.
+5. System prompts: *"Confirm $1.00 payment via Open Payments?"* -> Viewer clicks **Confirm**.
+6. Open Payments processes the transaction in seconds.
+7. Gallery unlocks. The viewer can now view high-res images, read the artist's commentary, and save individual pieces to their profile.
+
+### Flow 2: The One-Time Purchase (Physical/Digital Art)
+
+1. Viewer scrolls the chronological Home Feed.
+2. Viewer sees an Oil Painting available for $300.
+3. Viewer clicks **"Buy Artwork"**.
+4. Viewer fills out a basic text form with shipping details (for physical goods).
+5. Viewer authorizes the payment; Open Payments handles the $300 transfer to the artist.
+6. Artist receives an automated email notification containing the buyer's shipping address and transaction confirmation. UI updates to "Sold".
+
+---
+
+## 6. Technical Architecture & Stack
+
+To support fast UI updates and secure gating of premium content, the following stack is recommended:
+
+* **Frontend:** React, Next.js, or Vue.
+* *Rationale:* Ideal for fast, responsive image loading, seamless navigation, and dynamic state changes (e.g., instantly swapping blurred placeholders with high-res images upon payment confirmation).
+
+
+* **Backend:** Node.js/Express or Python/Django.
+* *Rationale:* Capable of securely handling user authentication, processing database relationships (follows/saves), and securely communicating with the Open Payments APIs (Grant Negotiation and Authorization Protocol).
+
+
+* **Database:** PostgreSQL (Relational) or MongoDB (NoSQL).
+* *Required Entities:* `Users`, `Artworks`, `Galleries`, `Transactions`, and `Follows/Saves`.
+
+
+* **Storage:** AWS S3 or Cloudinary.
+* *Rationale:* Crucial for handling image compression, generating public thumbnails, and—most importantly—securely gating premium images. High-res images must be locked behind pre-signed URLs so they cannot be accessed via direct URL inspection before payment is verified.
+
+
+* **Payments Infrastructure:** Interledger Protocol (ILP) and Open Payments APIs.
+
+---
+
+## 7. Next Steps & Action Items
+
+1. **Wireframing (Design Team):**
+* Sketch out the three main screens: The Home Feed, The Artist Profile (illustrating the split between public art and locked premium tabs), and the Checkout/Unlock payment modal.
+
+
+2. **API Review (Engineering Team):**
+* Technical lead to review the latest Open Payments API documentation.
+* Validate the latency and UX flow of the "Pay-to-View" micro-transaction to ensure it can operate as seamlessly as specified in the User Flows.
+
+
+3. **Database Schema Design:** Map out the exact relationships between Users, Galleries, Artworks, and Transactions based on the core features above.
