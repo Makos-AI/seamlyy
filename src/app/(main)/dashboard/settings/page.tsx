@@ -2,11 +2,14 @@
 
 import * as React from "react"
 import { useSession } from "next-auth/react"
-import { Card, Input, Button, ToastProvider, useToast } from "@/components/ui"
+import { Input, Button, useToast } from "@/components/ui"
+import { updateProfile } from "@/actions/user"
+import { useRouter } from "next/navigation"
 
 export default function SettingsPage() {
   const { data: session } = useSession()
   const { addToast } = useToast()
+  const router = useRouter()
   
   const [name, setName] = React.useState(session?.user?.name || "")
   const [walletPointer, setWalletPointer] = React.useState("")
@@ -17,23 +20,30 @@ export default function SettingsPage() {
     e.preventDefault()
     setLoading(true)
     
-    // In a real app, this would call a server action
-    // await updateProfile({ name, walletPointer, bio })
+    const result = await updateProfile({ name, walletPointer, bio })
     
-    setTimeout(() => {
-      setLoading(false)
+    setLoading(false)
+    if (result.success) {
       addToast({
         type: 'success',
         message: 'Profile updated successfully'
       })
-    }, 1000)
+      router.push('/dashboard')
+      router.refresh()
+    } else {
+      addToast({
+        type: 'error',
+        message: result.error || 'Failed to update'
+      })
+    }
   }
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-12">
-      <h1 className="text-3xl font-heading font-bold text-text-primary mb-8">Profile Settings</h1>
+      <h1 className="text-3xl font-bold text-text-primary mb-2">Profile Settings</h1>
+      <p className="text-text-secondary mb-8">Manage your account and payment configuration.</p>
       
-      <Card className="p-8" hoverable={false}>
+      <div className="bg-bg-secondary border border-border rounded-2xl p-8">
         <form onSubmit={handleSave} className="space-y-6">
           <Input 
             label="Display Name" 
@@ -44,7 +54,7 @@ export default function SettingsPage() {
           <div className="space-y-2">
             <label className="block text-sm font-medium text-text-secondary">Bio</label>
             <textarea 
-              className="w-full bg-bg-secondary border border-border rounded-xl p-3 text-sm focus:outline-none focus:border-accent transition-colors text-text-primary"
+              className="w-full bg-bg-primary border border-border rounded-lg p-3 text-sm focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/25 transition-all text-text-primary placeholder:text-text-muted resize-none"
               rows={4}
               value={bio}
               onChange={(e) => setBio(e.target.value)}
@@ -52,13 +62,13 @@ export default function SettingsPage() {
             />
           </div>
 
-          <div className="pt-4 border-t border-border">
-            <h3 className="text-lg font-medium text-text-primary mb-2">Payment Configuration</h3>
+          <div className="pt-6 border-t border-border">
+            <h3 className="text-lg font-semibold text-text-primary mb-2">Payment Configuration</h3>
             <p className="text-sm text-text-secondary mb-4">
               Set your Open Payments wallet pointer to receive funds.
               <br />
-              <a href="https://rafiki.money/" target="_blank" rel="noopener noreferrer" className="text-accent hover:text-accent-hover transition-colors font-medium">
-                Get a free testnet wallet pointer from Rafiki
+              <a href="https://rafiki.money/" target="_blank" rel="noopener noreferrer" className="text-gold hover:text-gold/80 transition-colors font-medium">
+                Get a free testnet wallet from Rafiki →
               </a>
             </p>
             <Input 
@@ -73,7 +83,7 @@ export default function SettingsPage() {
             <Button type="submit" loading={loading}>Save Changes</Button>
           </div>
         </form>
-      </Card>
+      </div>
     </div>
   )
 }

@@ -3,9 +3,10 @@ import { notFound } from "next/navigation"
 import { Avatar, Badge, Card, Button } from "@/components/ui"
 import Link from "next/link"
 
-export default async function ProfilePage({ params }: { params: { id: string } }) {
+export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const user = await prisma.user.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       artworks: { where: { status: { not: 'NOT_FOR_SALE' }, galleryId: null } },
       galleries: true,
@@ -80,7 +81,7 @@ export default async function ProfilePage({ params }: { params: { id: string } }
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {user.galleries.map((gallery) => (
                   <Link key={gallery.id} href={`/gallery/${gallery.id}`}>
-                    <Card className={`overflow-hidden group h-full flex flex-col ${gallery.accessFee > 0 ? 'border border-accent/50 hover:shadow-[0_0_15px_rgba(124,92,252,0.3)] transition-all relative' : ''}`}>
+                    <Card className={`overflow-hidden group h-full flex flex-col ${gallery.accessFee > 0 ? 'border border-gold/40 hover:shadow-[0_0_15px_rgba(217,164,65,0.3)] transition-all relative' : ''}`}>
                       {gallery.accessFee > 0 && (
                         <div className="absolute top-4 right-4 z-10 group/tooltip">
                           <div className="w-8 h-8 rounded-full bg-bg-glass backdrop-blur flex items-center justify-center border border-accent text-accent">

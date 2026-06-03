@@ -3,9 +3,14 @@ import { auth } from "@/auth"
 export default auth((req) => {
   const isLoggedIn = !!req.auth
   const isDashboardRoute = req.nextUrl.pathname.startsWith('/dashboard')
+  const isAuthRoute = req.nextUrl.pathname === '/login' || req.nextUrl.pathname === '/register'
   
   if (isDashboardRoute && !isLoggedIn) {
     return Response.redirect(new URL('/login', req.nextUrl))
+  }
+
+  if (isAuthRoute && isLoggedIn) {
+    return Response.redirect(new URL('/dashboard', req.nextUrl))
   }
 })
 

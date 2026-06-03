@@ -5,11 +5,12 @@ import Link from "next/link"
 import { Metadata, ResolvingMetadata } from "next"
 
 export async function generateMetadata(
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
   parent: ResolvingMetadata
 ): Promise<Metadata> {
+  const { id } = await params
   const gallery = await prisma.gallery.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: { artist: true }
   })
 
@@ -30,9 +31,10 @@ export async function generateMetadata(
   return meta
 }
 
-export default async function GalleryPage({ params }: { params: { id: string } }) {
+export default async function GalleryPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const gallery = await prisma.gallery.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: { 
       artist: true,
       artworks: true

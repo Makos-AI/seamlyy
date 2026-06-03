@@ -3,9 +3,10 @@ import { notFound } from "next/navigation"
 import { Avatar, Badge, Button, Card } from "@/components/ui"
 import Link from "next/link"
 
-export default async function ArtworkPage({ params }: { params: { id: string } }) {
+export default async function ArtworkPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const artwork = await prisma.artwork.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: { artist: true, gallery: true }
   })
 

@@ -1,7 +1,7 @@
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
-import { Card, Button } from "@/components/ui"
+import { Card, Button, Badge } from "@/components/ui"
 import Link from "next/link"
 
 export default async function DashboardPage() {
@@ -21,21 +21,28 @@ export default async function DashboardPage() {
 
   const totalSales = user.sales.filter(s => s.type !== "PAY_TO_VIEW").reduce((acc, sale) => acc + Number(sale.amount), 0)
   const revenueFromViews = user.sales.filter(s => s.type === "PAY_TO_VIEW").reduce((acc, sale) => acc + Number(sale.amount), 0)
-  
-  // A mock logic for current wallet balance (e.g. Sales + Revenue - Payouts)
-  // We'll just display the sum for now to demonstrate the metric
   const walletBalance = totalSales + revenueFromViews
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-heading font-bold text-text-primary">Dashboard</h1>
-        <div className="flex gap-4">
-          <Link href="/dashboard/gallery">
-            <Button variant="secondary">Gallery Management</Button>
-          </Link>
+    <div className="container mx-auto max-w-6xl px-4 py-12">
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
+        <div>
+          <p className="text-gold font-semibold text-sm uppercase tracking-widest mb-1">Dashboard</p>
+          <h1 className="text-3xl font-bold text-text-primary">Welcome back, {user.name}</h1>
+        </div>
+        <div className="flex gap-3 flex-wrap">
+          {user.role === 'ARTIST' && (
+            <>
+              <Link href={`/profile/${user.id}`}>
+                <Button variant="ghost" size="sm">View Profile</Button>
+              </Link>
+              <Link href="/dashboard/gallery">
+                <Button variant="secondary" size="sm">Gallery Management</Button>
+              </Link>
+            </>
+          )}
           <Link href="/dashboard/settings">
-            <Button variant="secondary">Profile Settings</Button>
+            <Button variant="secondary" size="sm">Settings</Button>
           </Link>
         </div>
       </div>
@@ -43,37 +50,34 @@ export default async function DashboardPage() {
       {user.role === 'ARTIST' ? (
         <>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-            <Card className="p-6 border-l-4 border-l-accent">
-              <h3 className="text-sm font-medium text-text-secondary mb-2">Total Sales (Artworks)</h3>
-              <p className="text-3xl font-semibold text-text-primary">${totalSales.toFixed(2)}</p>
+            <Card className="p-6 border-l-4 border-l-gold" hoverable={false}>
+              <h3 className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">Total Sales</h3>
+              <p className="text-3xl font-bold text-text-primary">${totalSales.toFixed(2)}</p>
             </Card>
-            <Card className="p-6 border-l-4 border-l-success relative overflow-hidden group">
-              <div className="absolute -right-4 -top-4 w-16 h-16 bg-success/10 rounded-full flex items-center justify-center opacity-50 group-hover:scale-150 transition-transform">
-                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-success"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-              </div>
-              <h3 className="text-sm font-medium text-text-secondary mb-2 relative z-10">Revenue from Views</h3>
-              <p className="text-3xl font-semibold text-text-primary relative z-10">${revenueFromViews.toFixed(2)}</p>
-              <p className="text-xs text-success mt-2 relative z-10 flex items-center gap-1">
+            <Card className="p-6 border-l-4 border-l-success" hoverable={false}>
+              <h3 className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">Revenue from Views</h3>
+              <p className="text-3xl font-bold text-text-primary">${revenueFromViews.toFixed(2)}</p>
+              <p className="text-xs text-success mt-2 flex items-center gap-1">
                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
-                 +24% this week
+                 Web Monetization active
               </p>
             </Card>
-            <Card className="p-6">
-              <h3 className="text-sm font-medium text-text-secondary mb-2">Wallet Balance</h3>
-              <p className="text-3xl font-semibold text-text-primary">${walletBalance.toFixed(2)}</p>
+            <Card className="p-6" hoverable={false}>
+              <h3 className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">Wallet Balance</h3>
+              <p className="text-3xl font-bold text-text-primary">${walletBalance.toFixed(2)}</p>
               {!user.walletPointer ? (
-                <Link href="/dashboard/settings" className="text-sm text-error hover:underline mt-2 inline-block">Pointer not set</Link>
+                <Link href="/dashboard/settings" className="text-xs text-error hover:underline mt-2 inline-block">Set up wallet →</Link>
               ) : (
-                 <p className="text-xs text-text-muted mt-2 truncate font-mono bg-bg-secondary px-2 py-1 rounded inline-block">{user.walletPointer}</p>
+                 <p className="text-xs text-text-muted mt-2 truncate font-mono bg-bg-tertiary px-2 py-1 rounded inline-block max-w-full">{user.walletPointer}</p>
               )}
             </Card>
           </div>
 
           <div className="mb-12">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-heading font-semibold text-text-primary">Your Artworks</h2>
+              <h2 className="text-xl font-bold text-text-primary">Your Artworks</h2>
               <Link href="/dashboard/upload">
-                <Button>Upload Artwork</Button>
+                <Button size="sm">Upload Artwork</Button>
               </Link>
             </div>
             
@@ -85,15 +89,17 @@ export default async function DashboardPage() {
                       <img src={art.thumbnailUrl} alt={art.title} className="w-full h-full object-cover" />
                     </div>
                     <div className="p-4">
-                      <h3 className="font-semibold text-text-primary truncate">{art.title}</h3>
-                      <p className="text-sm text-text-secondary mt-1">{art.status}</p>
+                      <h3 className="font-semibold text-text-primary text-sm truncate">{art.title}</h3>
+                      <Badge variant={art.status === 'FIXED_PRICE' ? 'success' : 'neutral'} className="mt-2">
+                        {art.status.replace(/_/g, ' ')}
+                      </Badge>
                     </div>
                   </Card>
                 ))}
               </div>
             ) : (
-              <Card className="p-12 text-center bg-bg-secondary border-dashed">
-                <p className="text-text-secondary mb-4">You haven't uploaded any artwork yet.</p>
+              <Card className="p-12 text-center bg-bg-secondary border-dashed" hoverable={false}>
+                <p className="text-text-muted mb-4">You haven't uploaded any artwork yet.</p>
                 <Link href="/dashboard/upload">
                   <Button>Upload your first piece</Button>
                 </Link>
@@ -104,41 +110,40 @@ export default async function DashboardPage() {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-            <Card className="p-6 border-l-4 border-l-accent">
-              <h3 className="text-sm font-medium text-text-secondary mb-2">Your Collection</h3>
-              <p className="text-3xl font-semibold text-text-primary">{user.purchases.length} Artworks</p>
+            <Card className="p-6 border-l-4 border-l-blue" hoverable={false}>
+              <h3 className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">Your Collection</h3>
+              <p className="text-3xl font-bold text-text-primary">{user.purchases.length} Artworks</p>
             </Card>
-            <Card className="p-6">
-              <h3 className="text-sm font-medium text-text-secondary mb-2">Wallet Pointer</h3>
-              <p className="text-xl font-semibold text-text-primary mb-2">Linked to Rafiki Testnet</p>
+            <Card className="p-6" hoverable={false}>
+              <h3 className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">Wallet Pointer</h3>
               {!user.walletPointer ? (
-                <Link href="/dashboard/settings" className="text-sm text-error hover:underline mt-2 inline-block">Pointer not set</Link>
+                <Link href="/dashboard/settings" className="text-sm text-gold hover:underline mt-2 inline-block">Set up wallet →</Link>
               ) : (
-                 <p className="text-xs text-text-muted truncate font-mono bg-bg-secondary px-2 py-1 rounded inline-block">{user.walletPointer}</p>
+                 <p className="text-sm text-text-muted truncate font-mono bg-bg-tertiary px-2 py-1 rounded inline-block">{user.walletPointer}</p>
               )}
             </Card>
           </div>
 
           <div className="mb-12">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-heading font-semibold text-text-primary">Acquired Pieces</h2>
+              <h2 className="text-xl font-bold text-text-primary">Acquired Pieces</h2>
               <Link href="/explore">
-                <Button>Explore Galleries</Button>
+                <Button size="sm">Explore Galleries</Button>
               </Link>
             </div>
             
             {user.purchases.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {user.purchases.map((purchase) => (
-                  <Card key={purchase.id} className="overflow-hidden flex flex-col p-4">
-                     <p className="text-sm text-text-secondary">Transaction: {purchase.id}</p>
-                     <p className="font-semibold text-lg mt-2">${Number(purchase.amount).toFixed(2)}</p>
+                  <Card key={purchase.id} className="p-4">
+                     <p className="text-xs text-text-muted">Transaction</p>
+                     <p className="font-bold text-lg text-text-primary mt-1">${Number(purchase.amount).toFixed(2)}</p>
                   </Card>
                 ))}
               </div>
             ) : (
-              <Card className="p-12 text-center bg-bg-secondary border-dashed">
-                <p className="text-text-secondary mb-4">Your collection is empty.</p>
+              <Card className="p-12 text-center bg-bg-secondary border-dashed" hoverable={false}>
+                <p className="text-text-muted mb-4">Your collection is empty.</p>
                 <Link href="/explore">
                   <Button>Discover Artworks</Button>
                 </Link>

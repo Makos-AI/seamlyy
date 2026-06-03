@@ -1,15 +1,18 @@
 import type { Metadata } from "next";
-import { Inter, Outfit } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { SplashScreen } from "@/components/layout/SplashScreen";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
-const outfit = Outfit({ subsets: ["latin"], variable: "--font-heading" });
+const plusJakarta = Plus_Jakarta_Sans({ 
+  subsets: ["latin"], 
+  variable: "--font-sans",
+  weight: ["300", "400", "500", "600", "700", "800"]
+});
 
 export const metadata: Metadata = {
-  title: "Seamlyy | Open Art Marketplace",
-  description: "Buy, sell, and unlock premium art with Open Payments.",
+  title: "Seamlyy | Seamless Payment, Limitless Creativity",
+  description: "Seamlyy connects artists and art lovers around the world through open payments, making art accessible and rewarding for all.",
 };
 
 export default function RootLayout({
@@ -18,8 +21,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${inter.variable} ${outfit.variable} antialiased min-h-screen flex flex-col`}>
+    <html lang="en">
+      <body className={`${plusJakarta.variable} antialiased min-h-screen flex flex-col`} style={{ fontFamily: 'var(--font-sans)' }}>
         <Providers>
           <SplashScreen />
           {children}

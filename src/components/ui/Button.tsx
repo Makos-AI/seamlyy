@@ -2,26 +2,27 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'destructive'
+  variant?: 'primary' | 'secondary' | 'ghost' | 'destructive' | 'buy'
   size?: 'sm' | 'md' | 'lg'
   loading?: boolean
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', loading = false, disabled, children, ...props }, ref) => {
-    const baseStyles = "inline-flex items-center justify-center rounded-md font-medium transition-all focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-bg-primary disabled:opacity-50 disabled:pointer-events-none"
+    const baseStyles = "inline-flex items-center justify-center rounded-lg font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gold/50 focus:ring-offset-2 focus:ring-offset-bg-primary disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
     
     const variants = {
-      primary: "bg-gradient-to-r from-accent to-accent-hover text-text-canvas shadow-lg shadow-accent-glow hover:scale-105",
-      secondary: "border border-border bg-transparent hover:bg-border text-text-primary",
-      ghost: "bg-transparent hover:bg-border text-text-primary",
-      destructive: "bg-error text-white hover:bg-error/90 hover:scale-105"
+      primary: "bg-blue text-white hover:bg-blue/90 hover:shadow-lg hover:shadow-blue/25 active:scale-[0.98]",
+      secondary: "border border-border bg-transparent hover:bg-bg-tertiary text-text-primary hover:border-border-hover active:scale-[0.98]",
+      ghost: "bg-transparent hover:bg-bg-secondary text-text-secondary hover:text-text-primary",
+      destructive: "bg-error text-white hover:bg-error/90 active:scale-[0.98]",
+      buy: "bg-success text-white hover:bg-success/90 hover:shadow-lg hover:shadow-success/25 active:scale-[0.98]"
     }
 
     const sizes = {
       sm: "h-9 px-4 text-sm",
-      md: "h-11 px-8 text-base",
-      lg: "h-14 px-10 text-lg"
+      md: "h-11 px-6 text-sm",
+      lg: "h-12 px-8 text-base"
     }
 
     return (

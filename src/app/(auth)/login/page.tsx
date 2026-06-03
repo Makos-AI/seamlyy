@@ -30,46 +30,52 @@ export default function LoginPage() {
   }
 
   return (
-    <Card className="w-full max-w-md border border-border rounded-2xl p-8 shadow-2xl relative z-10 animate-slide-up" hoverable={false}>
-        <div className="flex justify-center mb-6">
-          <Link href="/">
-            <img src="/logo.png" alt="Seamlyy Logo" className="h-10 w-auto" />
-          </Link>
-        </div>
-        <h1 className="text-2xl font-heading font-bold text-text-primary text-center mb-2">Welcome back</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <Input
-          label="Email address"
-          type="email"
-          placeholder="Where opportunities find you"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <Input
-          label="Password"
-          type="password"
-          placeholder="Your studio password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        {error && <p className="text-sm text-error">{error}</p>}
-        <Button type="submit" className="w-full" size="lg" loading={loading}>
-          Sign In
-        </Button>
-
-        <div className="mt-4 flex items-center justify-center gap-2 text-xs text-text-muted">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-          256-bit Encrypted Connection
-        </div>
-      </form>
-      <div className="mt-6 text-center text-sm text-text-secondary">
-        Don't have an account?{" "}
-        <Link href="/register" className="text-accent hover:text-accent-hover transition-colors">
-          Register here
+    <div className="w-full max-w-md mx-auto">
+      <div className="flex justify-center mb-8">
+        <Link href="/">
+          <img src="/logo.png" alt="Seamlyy" className="h-8 w-auto" />
         </Link>
       </div>
-    </Card>
+      
+      <div className="bg-bg-secondary border border-border rounded-2xl p-8 shadow-2xl shadow-black/20 animate-slide-up">
+        <h1 className="text-2xl font-bold text-text-primary text-center mb-2">Welcome back</h1>
+        <p className="text-sm text-text-muted text-center mb-8">Sign in to your studio</p>
+        
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <Input
+            label="Email address"
+            type="email"
+            placeholder="Where opportunities find you"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <Input
+            label="Password"
+            type="password"
+            placeholder="Your studio password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          {error && <p className="text-sm text-error bg-error/10 border border-error/20 rounded-lg px-3 py-2">{error}</p>}
+          <Button type="submit" className="w-full" size="lg" loading={loading}>
+            Sign In
+          </Button>
+        </form>
+
+        <div className="mt-4 flex items-center justify-center gap-2 text-xs text-text-muted">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          256-bit Encrypted
+        </div>
+      </div>
+      
+      <p className="mt-6 text-center text-sm text-text-muted">
+        Don't have an account?{" "}
+        <Link href="/register" className="text-gold hover:text-gold/80 font-medium transition-colors">
+          Create one
+        </Link>
+      </p>
+    </div>
   )
 }
