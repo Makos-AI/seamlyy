@@ -27,7 +27,7 @@ export function Footer() {
             <ul className="space-y-2 text-sm text-text-secondary">
               <li><Link href="/about" className="hover:text-accent transition-colors">About Us</Link></li>
               <li><Link href="/how-it-works" className="hover:text-accent transition-colors">How It Works</Link></li>
-              <li><Link href="/register" className="hover:text-accent transition-colors">Sell Your Art</Link></li>
+              <li><Link href="/sell-art" className="hover:text-accent transition-colors">Sell Your Art</Link></li>
             </ul>
           </div>
           <div>

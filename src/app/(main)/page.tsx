@@ -32,7 +32,7 @@ export default async function HomePage() {
             <Link href="/explore">
               <Button size="lg">Explore Artworks</Button>
             </Link>
-            <Link href="/register">
+            <Link href="/sell-art">
               <Button size="lg" variant="secondary">Sell Your Art</Button>
             </Link>
           </div>
