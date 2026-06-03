@@ -1,48 +1,36 @@
-Seamlyy
-Seamless payments, boundless art.
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-Overview
-Seamlyy is a lightweight fintech web application engineered to bridge the gap between African artists and the global art economy. By replacing traditional, high-friction payment rails with a decentralized digital payment architecture, Seamlyy enables creators to instantly receive cross-border payouts and monetize their audiences.
+## Getting Started
 
-Key Features
-Open Payments Checkout: Features an instant checkout flow utilizing GNAP for secure, privacy-preserving wallet authorization, completely bypassing centralized escrow systems.
+First, run the development server:
 
-Web Monetization: Leverages the Interledger Protocol (ILP) to allow collectors to stream continuous micro-payments to artists simply by viewing their digital galleries.
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
 
-Automated Revenue Splitting: A smart, point-of-sale transaction split that routes 95% of funds directly to the artist and 5% to the platform with zero revenue leakage.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-Accessible UI/UX: Designed specifically for emerging markets, ensuring the web application is fully optimized and functional on low-end mobile devices.
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-Tech Stack & Architecture
-Backend: Java, Spring Boot
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-Protocols: Interledger Protocol (ILP), Open Payments API, GNAP, Web Monetization (<meta name="monetization">)
+## Learn More
 
-System Design: Built on a strict systems analysis framework to ensure a modular, scalable architecture capable of handling high-frequency micro-transactions securely.
+To learn more about Next.js, take a look at the following resources:
 
-Getting Started
-Prerequisites
-JDK 17+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-Maven or Gradle
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-An active Interledger Testnet Payment Pointer / Wallet
+## Deploy on Vercel
 
-Installation
-Clone the repository:
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-Bash
-git clone https://github.com/yourusername/seamlyy.git
-2. Navigate to the project directory:
-   ```bash
-   cd seamlyy
-Configure your application properties:
-Update the application.yml or application.properties with your Testnet API keys and Payment Pointers.
-
-Run the application:
-
-./mvnw spring-boot:run
-
-
-## Contributing
-Pull requests are welcome. For major changes, please open an issue first to discuss what
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
