@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { Card, Button, Badge } from "@/components/ui"
 import { completePayment } from "@/actions/payment-complete"
 
-export default function SimulatePaymentPage() {
+function SimulatePaymentContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const txId = searchParams.get('txId')
@@ -41,5 +41,13 @@ export default function SimulatePaymentPage() {
         </Button>
       </Card>
     </div>
+  )
+}
+
+export default function SimulatePaymentPage() {
+  return (
+    <React.Suspense fallback={<div>Loading...</div>}>
+      <SimulatePaymentContent />
+    </React.Suspense>
   )
 }

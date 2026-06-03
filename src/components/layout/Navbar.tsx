@@ -23,14 +23,14 @@ export function Navbar() {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
         
         {/* Left: Logo */}
-        <div className="flex items-center gap-8">
+        <div className="flex-1 flex items-center justify-start gap-8">
           <Link href="/" className="flex items-center">
             <img src="/logo.png" alt="Seamlyy Logo" className="h-8 w-auto" />
           </Link>
         </div>
 
         {/* Center: Nav Links & Search */}
-        <div className="flex-1 flex items-center justify-center gap-8">
+        <div className="flex items-center justify-center gap-8">
           <div className="hidden md:flex items-center gap-6">
             <Link href="/" className={`text-sm font-medium transition-colors ${pathname === '/' ? 'text-text-primary' : 'text-text-secondary hover:text-text-primary'}`}>
               Home
@@ -55,7 +55,7 @@ export function Navbar() {
         </div>
 
         {/* Right: Auth / User Profile */}
-        <div className="flex items-center justify-end gap-4 min-w-[150px]">
+        <div className="flex-1 flex items-center justify-end gap-4 min-w-[150px]">
           {session ? (
             <>
               <Link href="/dashboard" className="text-sm font-medium text-text-secondary hover:text-text-primary hidden sm:block">
