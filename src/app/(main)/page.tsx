@@ -63,8 +63,8 @@ export default async function HomePage() {
                     </div>
                   </div>
                   <div className="p-4 flex-1 flex flex-col">
-                    <h3 className="text-lg font-semibold text-text-primary truncate">{art.title}</h3>
-                    <p className="text-sm text-text-secondary truncate mt-1">by {art.artist.name}</p>
+                    <h3 className="text-lg font-semibold text-text-canvas truncate">{art.title}</h3>
+                    <p className="text-sm text-text-canvas-muted truncate mt-1">by {art.artist.name}</p>
                   </div>
                 </Card>
               </Link>
@@ -104,8 +104,8 @@ export default async function HomePage() {
                     </div>
                   </div>
                   <div className="p-4">
-                    <h3 className="text-lg font-semibold text-text-primary truncate">{gallery.title}</h3>
-                    <p className="text-sm text-text-secondary truncate mt-1">by {gallery.artist.name}</p>
+                    <h3 className="text-lg font-semibold text-text-canvas truncate">{gallery.title}</h3>
+                    <p className="text-sm text-text-canvas-muted truncate mt-1">by {gallery.artist.name}</p>
                   </div>
                 </Card>
               </Link>
