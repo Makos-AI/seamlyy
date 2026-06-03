@@ -5,25 +5,24 @@
   --font-sans: 'Inter', sans-serif;
   --font-heading: 'Outfit', sans-serif;
   
-  /* Dark premium palette (Evening Art Exhibition) */
-  --color-bg-primary: #1A110D;
-  --color-bg-secondary: #241812;
-  --color-bg-tertiary: #36241b;
-  --color-bg-card: #F5F2EB;
-  --color-bg-glass: rgba(26, 17, 13, 0.8);
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-bg-tertiary: var(--bg-tertiary);
+  --color-bg-card: var(--bg-card);
+  --color-bg-glass: var(--bg-glass);
   
-  --color-border: rgba(255, 255, 255, 0.08);
-  --color-border-hover: rgba(255, 255, 255, 0.15);
+  --color-border: var(--border);
+  --color-border-hover: var(--border-hover);
   
-  --color-text-primary: #FFFFFF;
-  --color-text-secondary: #D4C9C3;
-  --color-text-muted: #8A7A71;
-  --color-text-canvas: #1A110D;
-  --color-text-canvas-muted: #5C4A42;
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-canvas: var(--text-canvas);
+  --color-text-canvas-muted: var(--text-canvas-muted);
   
-  --color-accent: #E85D04;
-  --color-accent-hover: #FFBA08;
-  --color-accent-glow: rgba(255, 186, 8, 0.3);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-glow: var(--accent-glow);
   
   --color-success: #22c55e;
   --color-error: #ef4444;
@@ -34,6 +33,50 @@
   --radius-md: 0.75rem;
   --radius-lg: 1rem;
   --radius-xl: 1.5rem;
+}
+
+:root {
+  /* Light mode palette */
+  --bg-primary: #FAFAFA;
+  --bg-secondary: #F3F4F6;
+  --bg-tertiary: #E5E7EB;
+  --bg-card: #FFFFFF;
+  --bg-glass: rgba(255, 255, 255, 0.8);
+
+  --border: rgba(0, 0, 0, 0.1);
+  --border-hover: rgba(0, 0, 0, 0.2);
+
+  --text-primary: #111827;
+  --text-secondary: #4B5563;
+  --text-muted: #9CA3AF;
+  --text-canvas: #FFFFFF;
+  --text-canvas-muted: #F3F4F6;
+
+  --accent: #E85D04;
+  --accent-hover: #FFBA08;
+  --accent-glow: rgba(232, 93, 4, 0.3);
+}
+
+.dark {
+  /* Dark premium palette (Evening Art Exhibition) */
+  --bg-primary: #1A110D;
+  --bg-secondary: #241812;
+  --bg-tertiary: #36241b;
+  --bg-card: #F5F2EB;
+  --bg-glass: rgba(26, 17, 13, 0.8);
+  
+  --border: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.15);
+  
+  --text-primary: #FFFFFF;
+  --text-secondary: #D4C9C3;
+  --text-muted: #8A7A71;
+  --text-canvas: #1A110D;
+  --text-canvas-muted: #5C4A42;
+  
+  --accent: #E85D04;
+  --accent-hover: #FFBA08;
+  --accent-glow: rgba(255, 186, 8, 0.3);
 }
 
 /* Base styles */

@@ -55,6 +55,7 @@ export default function RegisterPage() {
 
         <Input
           label="Full name"
+          placeholder="Sign your masterpiece"
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
@@ -62,6 +63,7 @@ export default function RegisterPage() {
         <Input
           label="Email address"
           type="email"
+          placeholder="Where opportunities find you"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -69,6 +71,7 @@ export default function RegisterPage() {
         <Input
           label="Password"
           type="password"
+          placeholder="Your studio password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required

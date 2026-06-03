@@ -54,7 +54,13 @@ export default function SettingsPage() {
 
           <div className="pt-4 border-t border-border">
             <h3 className="text-lg font-medium text-text-primary mb-2">Payment Configuration</h3>
-            <p className="text-sm text-text-secondary mb-4">Set your Open Payments wallet pointer to receive funds.</p>
+            <p className="text-sm text-text-secondary mb-4">
+              Set your Open Payments wallet pointer to receive funds.
+              <br />
+              <a href="https://rafiki.money/" target="_blank" rel="noopener noreferrer" className="text-accent hover:text-accent-hover transition-colors font-medium">
+                Get a free testnet wallet pointer from Rafiki
+              </a>
+            </p>
             <Input 
               label="Wallet Pointer" 
               placeholder="$wallet.example.com/alice"
