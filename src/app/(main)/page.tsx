@@ -23,10 +23,10 @@ export default async function HomePage() {
         <div className="container mx-auto text-center max-w-3xl relative z-10 animate-slide-up">
           <Badge variant="info" className="mb-6">Powered by Open Payments</Badge>
           <h1 className="text-5xl md:text-7xl font-heading font-bold text-text-primary leading-tight mb-6">
-            Discover and collect <br className="hidden md:block"/> extraordinary art
+            Built for artists. <br className="hidden md:block"/> Open to the world.
           </h1>
           <p className="text-lg md:text-xl text-text-secondary mb-10 max-w-2xl mx-auto">
-            Seamlyy is a frictionless marketplace for artists and collectors. Support creators directly with one-time purchases and micro-transactions.
+            Showcase your work, grow your audience, and receive support without borders.
           </p>
           <div className="flex items-center justify-center gap-4">
             <Link href="/explore">
