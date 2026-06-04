@@ -52,6 +52,17 @@ async function main() {
     }
   })
 
+  const collector2 = await prisma.user.create({
+    data: {
+      email: 'collector2@example.com',
+      name: 'Chidi Collector',
+      role: 'VIEWER',
+      hashedPassword,
+      walletPointer: '$rafiki.money/p/chidi',
+    }
+  })
+
+
   // Create Galleries
   const gallery1 = await prisma.gallery.create({
     data: {
@@ -202,6 +213,7 @@ async function main() {
   console.log('1. artist1@example.com / password123')
   console.log('2. artist2@example.com / password123')
   console.log('3. collector@example.com / password123')
+  console.log('4. collector2@example.com / password123')
 }
 
 main()
