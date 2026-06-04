@@ -1,8 +1,20 @@
 import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 import { Card, Badge, Button } from "@/components/ui"
+import { auth } from "@/auth"
+import { formatPrice } from "@/lib/utils"
 
 export default async function HomePage() {
+  const session = await auth()
+  let preferredCurrency = "USD"
+  if (session?.user?.id) {
+    const dbUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { preferredCurrency: true }
+    })
+    preferredCurrency = dbUser?.preferredCurrency || "USD"
+  }
+
   const recentArtworks = await prisma.artwork.findMany({
     where: { status: { not: 'NOT_FOR_SALE' } },
     include: { artist: true },
@@ -15,10 +27,6 @@ export default async function HomePage() {
     orderBy: { createdAt: 'desc' },
     take: 4
   })
-
-  const artistCount = await prisma.user.count({ where: { role: 'ARTIST' } })
-  const artworkCount = await prisma.artwork.count()
-  const collectorCount = await prisma.user.count({ where: { role: 'VIEWER' } })
 
   return (
     <div className="flex flex-col">
@@ -71,71 +79,13 @@ export default async function HomePage() {
                   <div className="absolute -bottom-4 -left-4 bg-bg-card border border-border rounded-xl p-4 shadow-xl">
                     <p className="text-xs text-text-muted mb-1">Featured</p>
                     <p className="font-semibold text-text-primary">{recentArtworks[0].title}</p>
-                    <p className="text-sm text-gold">${recentArtworks[0].price?.toString()}</p>
+                    <p className="text-sm text-gold">{formatPrice(Number(recentArtworks[0].price), preferredCurrency)}</p>
                   </div>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Stats Row */}
-          <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              { 
-                icon: (
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gold">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                  </svg>
-                ), 
-                label: 'Artists', 
-                value: `${artistCount > 0 ? artistCount : '1,250'}+` 
-              },
-              { 
-                icon: (
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gold">
-                    <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 14.5 3 16.5 4.5 18.5L5.5 19.5C6.5 20.5 8 22 12 22Z"></path>
-                    <circle cx="7.5" cy="10.5" r="1.5" fill="currentColor"></circle>
-                    <circle cx="11.5" cy="7.5" r="1.5" fill="currentColor"></circle>
-                    <circle cx="16.5" cy="9.5" r="1.5" fill="currentColor"></circle>
-                    <circle cx="15.5" cy="14.5" r="1.5" fill="currentColor"></circle>
-                  </svg>
-                ), 
-                label: 'Artworks', 
-                value: `${artworkCount > 0 ? artworkCount : '8,450'}+` 
-              },
-              { 
-                icon: (
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gold">
-                    <path d="M6 3h12l4 6-10 12L2 9z"></path>
-                    <path d="M11 3 8 9l4 12 4-12-3-6"></path>
-                    <path d="M2 9h20"></path>
-                  </svg>
-                ), 
-                label: 'Collectors', 
-                value: `${collectorCount > 0 ? collectorCount : '6,100'}+` 
-              },
-              { 
-                icon: (
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gold">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="2" y1="12" x2="22" y2="12"></line>
-                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                  </svg>
-                ), 
-                label: 'Countries', 
-                value: '90+' 
-              },
-            ].map(stat => (
-              <div key={stat.label} className="flex items-center gap-3 p-4 rounded-xl border border-border bg-bg-secondary/50">
-                <span className="flex-shrink-0">{stat.icon}</span>
-                <div>
-                  <p className="text-xl font-bold text-text-primary">{stat.value}</p>
-                  <p className="text-xs text-text-muted">{stat.label}</p>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -158,16 +108,12 @@ export default async function HomePage() {
                         alt={art.title}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
-                      {/* Save button */}
-                      <button className="absolute top-3 right-3 w-8 h-8 rounded-full bg-bg-primary/60 backdrop-blur-sm border border-border flex items-center justify-center text-text-muted hover:text-gold transition-colors">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                      </button>
                     </div>
                     <div className="p-4 flex-1 flex flex-col">
                       <h3 className="text-sm font-semibold text-text-primary truncate">{art.title}</h3>
                       <p className="text-xs text-text-muted truncate mt-1">{art.artist.name}</p>
                       <div className="mt-auto pt-3 flex items-center gap-2">
-                        <span className="text-sm font-bold text-text-primary">${art.price?.toString()}</span>
+                        <span className="text-sm font-bold text-text-primary">{formatPrice(Number(art.price), preferredCurrency)}</span>
                       </div>
                     </div>
                   </Card>
@@ -250,7 +196,7 @@ export default async function HomePage() {
                         <div className="absolute inset-0 bg-bg-primary/40 flex items-center justify-center group-hover:bg-transparent transition-colors">
                           <div className="bg-bg-glass backdrop-blur-md border border-gold/30 px-4 py-2 rounded-full flex items-center gap-2">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gold"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                            <span className="font-semibold text-sm text-gold">${gallery.accessFee.toString()}</span>
+                            <span className="font-semibold text-sm text-gold">{formatPrice(gallery.accessFee, preferredCurrency)}</span>
                           </div>
                         </div>
                       </div>

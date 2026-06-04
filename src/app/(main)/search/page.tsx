@@ -1,12 +1,24 @@
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { Card, Badge } from "@/components/ui"
+import { auth } from "@/auth"
+import { formatPrice } from "@/lib/utils"
 
 export default async function SearchPage({
   searchParams
 }: {
   searchParams: Promise<{ q?: string, category?: string }>
 }) {
+  const session = await auth()
+  let preferredCurrency = "USD"
+  if (session?.user?.id) {
+    const dbUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { preferredCurrency: true }
+    })
+    preferredCurrency = dbUser?.preferredCurrency || "USD"
+  }
+
   const { q: query = "", category = "" } = await searchParams
 
   const artworks = await prisma.artwork.findMany({
@@ -46,12 +58,9 @@ export default async function SearchPage({
                     alt={art.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <button className="absolute top-3 right-3 w-8 h-8 rounded-full bg-bg-primary/60 backdrop-blur-sm border border-border flex items-center justify-center text-text-muted hover:text-gold transition-colors">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                  </button>
                   <div className="absolute top-3 left-3">
                     <Badge variant={art.status === 'SOLD' ? 'neutral' : 'gold'}>
-                      {art.status === 'SOLD' ? 'Sold' : `$${art.price?.toString()}`}
+                      {art.status === 'SOLD' ? 'Sold' : formatPrice(Number(art.price), preferredCurrency)}
                     </Badge>
                   </div>
                 </div>
@@ -59,7 +68,7 @@ export default async function SearchPage({
                   <h3 className="text-sm font-semibold text-text-primary truncate">{art.title}</h3>
                   <p className="text-xs text-text-muted truncate mt-1">{art.artist.name}</p>
                   <div className="mt-auto pt-3">
-                    <span className="text-sm font-bold text-text-primary">${art.price?.toString()}</span>
+                    <span className="text-sm font-bold text-text-primary">{formatPrice(Number(art.price), preferredCurrency)}</span>
                   </div>
                 </div>
               </Card>

@@ -1,0 +1,38 @@
+Phase 1: UI & UX Cleansing (Frontend)
+This phase focuses on removing friction and cleaning up the interface to ensure a smooth, professional user journey.
+
+Remove Metrics (Landing Page): Delete the stat card component displaying "4+ Artists", "90+ Countries", etc.
+
+Fix Navigation (Profile Page): Implement a functional "Back" or "Done" button to restore routing flexibility.
+
+Streamline Focus (Artwork Components): Remove the "Like" button from all gallery and individual artwork views.
+
+Phase 2: Core Feature Implementation (Full Stack)
+This phase bridges the frontend interface with the backend data models, focusing on user uploads and accurate financial representations.
+
+Unlock Uploads (Frontend): Remove the hardcoded "Access Denied" error for the Artist persona.
+
+File Explorer (Frontend): Implement <input type="file" accept="image/*"> to trigger the native OS file selector.
+
+Upload Form (Frontend & Backend): Bind form inputs: Image file, "Add to premium gallery" toggle, "Open to Sale" toggle, Price input, Title, and Description.
+
+Live Balances (Frontend & Backend): Replace static UI numbers with an API call fetching the artist's real-time ILP testnet wallet balance.
+
+Ledger UI (Frontend): Build a "Transaction History" component on the dashboard to display incoming payments and sender details.
+
+Phase 3: The GNAP Flow Integration (Open Payments)
+This is the most complex phase, requiring secure backend execution and precise redirect handling to comply with the Open Payments specification.
+
+Client Keys Setup (Backend): Register and securely store the backend's client keys to identify the server to the testnet authorization servers.
+
+Quote Generation (Backend): On "Buy" click, generate a Quote to calculate the exact transaction cost on the buyer's testnet wallet.
+
+Grant Request (Backend): Request a Grant from the buyer's wallet Authorization Server to execute the specific quote.
+
+GNAP Redirect (Frontend): Capture the interaction URL from the backend and redirect the user to the Rafiki testnet UI for approval.
+
+Callback Handler (Backend): Create a dedicated route (e.g., /checkout/success) to catch the user when the wallet redirects them back.
+
+Execution (Backend): Exchange the approval for an Access Token, trigger the Outgoing Payment, and update the database.
+
+UI Settlement (Frontend): Display the success state and refresh the Artist Dashboard to reflect the newly settled transaction.

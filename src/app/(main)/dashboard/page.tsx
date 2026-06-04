@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { Card, Button, Badge } from "@/components/ui"
 import Link from "next/link"
+import { WalletStats } from "@/components/dashboard/WalletStats"
+import { TransactionHistory } from "@/components/dashboard/TransactionHistory"
 
 export default async function DashboardPage() {
   const session = await auth()
@@ -13,14 +15,29 @@ export default async function DashboardPage() {
     include: {
       artworks: true,
       purchases: true,
-      sales: true,
+      sales: {
+        include: {
+          buyer: true,
+          artwork: true,
+          gallery: true
+        },
+        orderBy: {
+          createdAt: "desc"
+        }
+      },
     }
   })
 
   if (!user) redirect('/login')
 
-  const totalSales = user.sales.filter(s => s.type !== "PAY_TO_VIEW").reduce((acc, sale) => acc + Number(sale.amount), 0)
-  const revenueFromViews = user.sales.filter(s => s.type === "PAY_TO_VIEW").reduce((acc, sale) => acc + Number(sale.amount), 0)
+  const totalSales = user.sales
+    .filter(s => s.type !== "PAY_TO_VIEW" && s.status === "COMPLETED")
+    .reduce((acc, sale) => acc + Number(sale.amount), 0)
+
+  const revenueFromViews = user.sales
+    .filter(s => s.type === "PAY_TO_VIEW" && s.status === "COMPLETED")
+    .reduce((acc, sale) => acc + Number(sale.amount), 0)
+
   const walletBalance = totalSales + revenueFromViews
 
   return (
@@ -49,29 +66,13 @@ export default async function DashboardPage() {
 
       {user.role === 'ARTIST' ? (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-            <Card className="p-6 border-l-4 border-l-gold" hoverable={false}>
-              <h3 className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">Total Sales</h3>
-              <p className="text-3xl font-bold text-text-primary">${totalSales.toFixed(2)}</p>
-            </Card>
-            <Card className="p-6 border-l-4 border-l-success" hoverable={false}>
-              <h3 className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">Revenue from Views</h3>
-              <p className="text-3xl font-bold text-text-primary">${revenueFromViews.toFixed(2)}</p>
-              <p className="text-xs text-success mt-2 flex items-center gap-1">
-                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
-                 Web Monetization active
-              </p>
-            </Card>
-            <Card className="p-6" hoverable={false}>
-              <h3 className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">Wallet Balance</h3>
-              <p className="text-3xl font-bold text-text-primary">${walletBalance.toFixed(2)}</p>
-              {!user.walletPointer ? (
-                <Link href="/dashboard/settings" className="text-xs text-error hover:underline mt-2 inline-block">Set up wallet →</Link>
-              ) : (
-                 <p className="text-xs text-text-muted mt-2 truncate font-mono bg-bg-tertiary px-2 py-1 rounded inline-block max-w-full">{user.walletPointer}</p>
-              )}
-            </Card>
-          </div>
+          <WalletStats 
+            initialTotalSales={totalSales}
+            initialRevenueFromViews={revenueFromViews}
+            initialBalance={walletBalance}
+            initialWalletPointer={user.walletPointer}
+            initialPreferredCurrency={user.preferredCurrency || "USD"}
+          />
 
           <div className="mb-12">
             <div className="flex items-center justify-between mb-6">
@@ -105,6 +106,13 @@ export default async function DashboardPage() {
                 </Link>
               </Card>
             )}
+          </div>
+
+          <div className="mb-12">
+            <TransactionHistory 
+              transactions={user.sales as any}
+              preferredCurrency={user.preferredCurrency || "USD"}
+            />
           </div>
         </>
       ) : (

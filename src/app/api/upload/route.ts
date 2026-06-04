@@ -19,7 +19,22 @@ export async function POST(req: NextRequest) {
     const extension = filename.split('.').pop()
     const key = `${folder}/${session.user.id}/${crypto.randomUUID()}.${extension}`
 
-    const url = await getPresignedUploadUrl(key, contentType)
+    let url = ""
+    const hasRealS3 = process.env.AWS_ACCESS_KEY_ID && 
+                      process.env.AWS_ACCESS_KEY_ID !== "your_access_key_id" &&
+                      process.env.AWS_SECRET_ACCESS_KEY &&
+                      process.env.AWS_SECRET_ACCESS_KEY !== "your_secret_access_key"
+
+    if (hasRealS3) {
+      try {
+        url = await getPresignedUploadUrl(key, contentType)
+      } catch (err) {
+        console.warn("Failed to get S3 presigned URL, falling back to mock upload URL")
+        url = `/api/upload/mock?key=${key}`
+      }
+    } else {
+      url = `/api/upload/mock?key=${key}`
+    }
 
     return NextResponse.json({ url, key })
   } catch (error) {

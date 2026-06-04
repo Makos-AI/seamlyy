@@ -4,6 +4,8 @@ import { Avatar, Button, Card, Badge } from "@/components/ui"
 import Link from "next/link"
 import { Metadata, ResolvingMetadata } from "next"
 import { unlockGalleryAction } from "@/actions/payments"
+import { auth } from "@/auth"
+import { formatPrice } from "@/lib/utils"
 
 export async function generateMetadata(
   { params }: { params: Promise<{ id: string }> },
@@ -34,6 +36,17 @@ export async function generateMetadata(
 
 export default async function GalleryPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
+  const session = await auth()
+
+  let preferredCurrency = "USD"
+  if (session?.user?.id) {
+    const loggedInUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { preferredCurrency: true }
+    })
+    preferredCurrency = loggedInUser?.preferredCurrency || "USD"
+  }
+
   const gallery = await prisma.gallery.findUnique({
     where: { id },
     include: { 
@@ -113,7 +126,7 @@ export default async function GalleryPage({ params }: { params: Promise<{ id: st
               <div className="flex flex-col items-center justify-center gap-4">
                 <form action={unlockGalleryAction.bind(null, gallery.id)}>
                   <Button type="submit" size="lg" className="px-12">
-                    Unlock for ${gallery.accessFee.toString()}
+                    Unlock for {formatPrice(gallery.accessFee, preferredCurrency)}
                   </Button>
                 </form>
                 <p className="text-xs text-text-muted flex items-center gap-1">

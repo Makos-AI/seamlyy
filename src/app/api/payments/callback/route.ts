@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.redirect(new URL('/payment/error', req.url))
     }
 
-    const metadata = transaction.shippingDetails as any
+    const metadata = JSON.parse(transaction.shippingDetails as string)
 
     const client = await getOpenPaymentsClient()
     if (!client) throw new Error("No client")
@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
         url: formatWalletPointer(process.env.WALLET_ADDRESS!)
       })
 
-      // Execute Outgoing Payment
+      // Execute Outgoing Payment to Seller (Artist)
       await client.outgoingPayment.create(
         {
           url: buyerWalletAddress.resourceServer,
@@ -50,7 +50,19 @@ export async function GET(req: NextRequest) {
         },
         {
           walletAddress: buyerWalletAddress.id,
-          quoteId: metadata.quoteId,
+          quoteId: metadata.quoteSellerId,
+        }
+      )
+
+      // Execute Outgoing Payment to Platform (Seamlyy Commission)
+      await client.outgoingPayment.create(
+        {
+          url: buyerWalletAddress.resourceServer,
+          accessToken: (continuedGrant as any).access_token.value
+        },
+        {
+          walletAddress: buyerWalletAddress.id,
+          quoteId: metadata.quotePlatformId,
         }
       )
 

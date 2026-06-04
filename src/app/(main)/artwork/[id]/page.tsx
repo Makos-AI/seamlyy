@@ -3,9 +3,22 @@ import { notFound } from "next/navigation"
 import { Avatar, Badge, Button, Card } from "@/components/ui"
 import Link from "next/link"
 import { buyArtworkAction } from "@/actions/payments"
+import { auth } from "@/auth"
+import { formatPrice } from "@/lib/utils"
 
 export default async function ArtworkPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
+  const session = await auth()
+
+  let preferredCurrency = "USD"
+  if (session?.user?.id) {
+    const loggedInUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { preferredCurrency: true }
+    })
+    preferredCurrency = loggedInUser?.preferredCurrency || "USD"
+  }
+
   const artwork = await prisma.artwork.findUnique({
     where: { id },
     include: { artist: true, gallery: true }
@@ -42,7 +55,7 @@ export default async function ArtworkPage({ params }: { params: Promise<{ id: st
             <div className="bg-bg-secondary border border-border rounded-2xl p-6 mb-8 relative">
               <p className="text-sm text-text-secondary mb-2">Price</p>
               <p className="text-3xl font-semibold text-text-primary mb-6">
-                {artwork.price ? `$${artwork.price.toString()}` : 'N/A'}
+                {artwork.price ? formatPrice(Number(artwork.price), preferredCurrency) : 'N/A'}
               </p>
 
               {artwork.status === 'FIXED_PRICE' && (

@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth"
 
-export async function updateProfile(data: { name: string, walletPointer: string, bio: string }) {
+export async function updateProfile(data: { name: string, walletPointer: string, bio: string, preferredCurrency?: string }) {
   const session = await auth()
   
   if (!session?.user?.id) {
@@ -16,13 +16,38 @@ export async function updateProfile(data: { name: string, walletPointer: string,
       data: {
         name: data.name,
         walletPointer: data.walletPointer,
-        bio: data.bio
+        bio: data.bio,
+        preferredCurrency: data.preferredCurrency || "USD"
       }
     })
     
     return { success: true }
   } catch (error) {
     return { error: "Failed to update profile" }
+  }
+}
+
+export async function getProfile() {
+  const session = await auth()
+  
+  if (!session?.user?.id) {
+    return { error: "Unauthorized" }
+  }
+  
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        name: true,
+        walletPointer: true,
+        bio: true,
+        preferredCurrency: true
+      }
+    })
+    
+    return { success: true, user }
+  } catch (error) {
+    return { error: "Failed to fetch profile" }
   }
 }
 

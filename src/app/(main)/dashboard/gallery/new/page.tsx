@@ -4,6 +4,7 @@ import * as React from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "@/lib/auth-client"
 import { Card, Input, Button, useToast } from "@/components/ui"
+import { createGalleryAction } from "@/actions/artwork"
 
 export default function CreateGalleryPage() {
   const router = useRouter()
@@ -18,23 +19,58 @@ export default function CreateGalleryPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!file) {
+      addToast({ type: 'error', message: 'Please select a cover image file.' })
+      return
+    }
+
     setLoading(true)
-    
-    // Simulating API call for gallery creation
-    setTimeout(() => {
-      setLoading(false)
+    try {
+      // 1. Get presigned URL
+      const presignedRes = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filename: file.name,
+          contentType: file.type,
+          folder: 'covers'
+        })
+      })
+      const { url, key } = await presignedRes.json()
+      if (!url) throw new Error("Failed to get presigned URL")
+
+      // 2. Upload file (S3 or mock local route)
+      await fetch(url, {
+        method: 'PUT',
+        headers: { 'Content-Type': file.type },
+        body: file
+      })
+
+      // 3. Save to database using server action
+      const isMock = url.startsWith('/api/upload/mock')
+      const coverImageUrl = isMock 
+        ? `/uploads/${key}` 
+        : `https://${process.env.NEXT_PUBLIC_S3_BUCKET_NAME || 'seamlyy-uploads'}.s3.amazonaws.com/${key}`
+
+      const res = await createGalleryAction({
+        title,
+        description,
+        accessFee: parseFloat(accessFee) || 0,
+        coverImageUrl,
+        coverImageKey: key
+      })
+
+      if (res.error) throw new Error(res.error)
+
       addToast({ type: 'success', message: 'Gallery created successfully!' })
       router.push('/dashboard')
-    }, 1500)
-  }
-
-  if (session?.user?.role !== 'ARTIST') {
-    return (
-      <div className="container mx-auto px-4 py-12 text-center">
-        <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
-        <p className="text-text-secondary">Only artists can create galleries.</p>
-      </div>
-    )
+      router.refresh()
+    } catch (err: any) {
+      console.error(err)
+      addToast({ type: 'error', message: err.message || 'Failed to create gallery.' })
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -79,8 +115,9 @@ export default function CreateGalleryPage() {
             <label className="block text-sm font-medium text-text-secondary">Cover Image</label>
             <input 
               type="file" 
+              required
               accept="image/*" 
-              className="block w-full text-sm text-text-secondary file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-bg-tertiary file:text-text-primary hover:file:bg-bg-secondary"
+              className="block w-full text-sm text-text-secondary file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-bg-tertiary file:text-text-primary hover:file:bg-bg-secondary cursor-pointer"
               onChange={(e) => {
                 if (e.target.files && e.target.files[0]) {
                   setFile(e.target.files[0])

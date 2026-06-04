@@ -3,7 +3,7 @@
 import * as React from "react"
 import { useSession } from "@/lib/auth-client"
 import { Input, Button, useToast } from "@/components/ui"
-import { updateProfile } from "@/actions/user"
+import { updateProfile, getProfile } from "@/actions/user"
 import { useRouter } from "next/navigation"
 
 export default function SettingsPage() {
@@ -11,16 +11,30 @@ export default function SettingsPage() {
   const { addToast } = useToast()
   const router = useRouter()
   
-  const [name, setName] = React.useState(session?.user?.name || "")
+  const [name, setName] = React.useState("")
   const [walletPointer, setWalletPointer] = React.useState("")
   const [bio, setBio] = React.useState("")
+  const [preferredCurrency, setPreferredCurrency] = React.useState("USD")
   const [loading, setLoading] = React.useState(false)
+
+  React.useEffect(() => {
+    async function load() {
+      const result = await getProfile()
+      if (result.success && result.user) {
+        setName(result.user.name || "")
+        setWalletPointer(result.user.walletPointer || "")
+        setBio(result.user.bio || "")
+        setPreferredCurrency(result.user.preferredCurrency || "USD")
+      }
+    }
+    load()
+  }, [])
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     
-    const result = await updateProfile({ name, walletPointer, bio })
+    const result = await updateProfile({ name, walletPointer, bio, preferredCurrency })
     
     setLoading(false)
     if (result.success) {
@@ -62,6 +76,18 @@ export default function SettingsPage() {
             />
           </div>
 
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-text-secondary">Preferred Currency</label>
+            <select 
+              className="w-full h-10 bg-bg-primary border border-border rounded-lg px-3 text-sm focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/25 transition-all text-text-primary"
+              value={preferredCurrency}
+              onChange={(e) => setPreferredCurrency(e.target.value)}
+            >
+              <option value="USD">USD ($)</option>
+              <option value="NGN">NGN (₦)</option>
+            </select>
+          </div>
+          
           <div className="pt-6 border-t border-border">
             <h3 className="text-lg font-semibold text-text-primary mb-2">Payment Configuration</h3>
             <p className="text-sm text-text-secondary mb-4">

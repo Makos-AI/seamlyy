@@ -16,6 +16,8 @@ model User {
   googleId        String?   @unique
 
   walletPointer   String?   @unique
+  preferredCurrency String    @default("USD")
+
 
   name            String?
   image           String?

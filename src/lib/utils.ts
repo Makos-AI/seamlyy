@@ -3,10 +3,15 @@ export function cn(...classes: (string | undefined | null | false)[]) {
 }
 
 export function formatPrice(amount: number | string, currency: string = 'USD') {
-  return new Intl.NumberFormat('en-US', {
+  let val = Number(amount);
+  const isNgn = currency === 'NGN';
+  if (isNgn) {
+    val = val * 1500;
+  }
+  return new Intl.NumberFormat(isNgn ? 'en-NG' : 'en-US', {
     style: 'currency',
     currency,
-  }).format(Number(amount));
+  }).format(val);
 }
 
 export function formatDate(date: Date) {

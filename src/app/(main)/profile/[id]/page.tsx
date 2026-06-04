@@ -4,10 +4,21 @@ import { Avatar, Badge, Card, Button } from "@/components/ui"
 import Link from "next/link"
 import { auth } from "@/auth"
 import { followArtistAction } from "@/actions/user"
+import { formatPrice } from "@/lib/utils"
 
 export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const session = await auth()
+
+  let preferredCurrency = "USD"
+  if (session?.user?.id) {
+    const loggedInUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { preferredCurrency: true }
+    })
+    preferredCurrency = loggedInUser?.preferredCurrency || "USD"
+  }
+
   const user = await prisma.user.findUnique({
     where: { id },
     include: {
@@ -28,6 +39,17 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="container mx-auto px-4 py-12">
+      <div className="mb-6">
+        <Link 
+          href="/explore" 
+          className="inline-flex items-center text-sm font-medium text-text-muted hover:text-gold transition-colors"
+        >
+          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Back to Explore
+        </Link>
+      </div>
       <div className="bg-bg-secondary rounded-3xl p-8 mb-12 flex flex-col md:flex-row items-center gap-8 border border-border">
         <Avatar src={user.image} fallback={user.name || 'U'} size="xl" className="w-32 h-32" />
         <div className="flex-1 text-center md:text-left">
@@ -69,7 +91,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                         <img src={art.thumbnailUrl} alt={art.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                         <div className="absolute top-3 right-3 flex flex-col gap-2">
                           <Badge variant={art.status === 'SOLD' ? 'neutral' : 'info'}>
-                            {art.status === 'SOLD' ? 'Sold' : `$${art.price?.toString()}`}
+                            {art.status === 'SOLD' ? 'Sold' : formatPrice(Number(art.price), preferredCurrency)}
                           </Badge>
                         </div>
                       </div>
@@ -107,7 +129,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                         <div className="absolute inset-0 bg-bg-primary/20 flex items-center justify-center">
                           <div className="bg-bg-glass backdrop-blur-md border border-border px-4 py-2 rounded-full flex items-center gap-2">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                            <span className="font-semibold text-text-primary">${gallery.accessFee.toString()}</span>
+                             <span className="font-semibold text-text-primary">{formatPrice(gallery.accessFee, preferredCurrency)}</span>
                           </div>
                         </div>
                       </div>
