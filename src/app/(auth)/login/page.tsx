@@ -3,17 +3,20 @@
 import * as React from "react"
 import { Suspense } from "react"
 import Link from "next/link"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import { Card, Input, Button } from "@/components/ui"
 import { loginUser } from "@/actions/auth"
 
 function LoginForm() {
-  const router = useRouter()
   const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get("callbackUrl") || "/"
   
-  const [email, setEmail] = React.useState("")
-  const [password, setPassword] = React.useState("")
+  // 1. FIXED REDIRECT: This tells it to go to /dashboard after login instead of /
+  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard" 
+  
+  // 2. HARDCODED CREDENTIALS: These will now automatically appear in the boxes
+  const [email, setEmail] = React.useState("iii.7@gmail.com")
+  const [password, setPassword] = React.useState("12345678")
+  
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState("")
 
@@ -28,13 +31,10 @@ function LoginForm() {
       if (result?.error) {
         setError(result.error)
         setLoading(false)
-      } else {
-        router.push(callbackUrl)
-        router.refresh()
       }
     } catch (err) {
-      // Succeeded and redirect error bubbled up, or other error occurred
-      setLoading(false)
+      // Re-throws the hidden Next.js redirect error so navigation works!
+      throw err
     }
   }
 
@@ -80,7 +80,7 @@ function LoginForm() {
       </div>
       
       <p className="mt-6 text-center text-sm text-text-muted">
-        Don't have an account?{" "}
+        Dont have an account?{" "}
         <Link href="/register" className="text-gold hover:text-gold/80 font-medium transition-colors">
           Create one
         </Link>

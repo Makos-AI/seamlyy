@@ -11,7 +11,8 @@ const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
   name: z.string().min(1),
-  role: z.enum([UserRole.ARTIST, UserRole.VIEWER])
+  // FIX: Use nativeEnum for TypeScript enums
+  role: z.nativeEnum(UserRole) 
 })
 
 export async function registerUser(data: z.infer<typeof registerSchema>) {
@@ -67,11 +68,24 @@ export async function loginUser(data: z.infer<typeof loginSchema>, callbackUrl?:
       password: parsed.data.password,
       redirectTo: callbackUrl || "/"
     })
-    return { success: true }
-  } catch (error: any) {
-    if (error && (error.message === "NEXT_REDIRECT" || error.digest?.startsWith("NEXT_REDIRECT"))) {
-      throw error
+    // Removed `return { success: true }` as it is unreachable code.
+    // Next.js takes over via the redirect error thrown by `signIn`.
+  } catch (error) {
+    // FIX: Properly handle AuthErrors and re-throw the rest
+    if (error instanceof AuthError) {
+      switch (error.type) {
+        case "CredentialsSignin":
+          return { error: "Invalid email or password" }
+        default:
+          return { error: "Something went wrong" }
+      }
     }
-    return { error: "Invalid email or password" }
+    
+    // CRITICAL: This re-throws the NEXT_REDIRECT error so navigation works, 
+    // and also surfaces genuine server crashes instead of hiding them.
+    throw error
   }
 }
+
+
+
