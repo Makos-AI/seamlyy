@@ -99,8 +99,8 @@ export function MonetizedGalleryView({
 
   return (
     <div>
-      {/* Inject monetization tag when locked */}
-      {!isUnlocked && gallery.artist.walletPointer && (
+      {/* Inject monetization tag for optional streaming support */}
+      {gallery.artist.walletPointer && (
         <WebMonetizationMeta paymentPointer={gallery.artist.walletPointer} />
       )}
 
@@ -210,11 +210,11 @@ export function MonetizedGalleryView({
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch pt-2">
-                {/* Path A: Stream to Unlock */}
+                {/* Path A: Stream to View */}
                 <div className="flex flex-col justify-between p-5 bg-bg-primary/50 border border-border rounded-xl text-left space-y-4">
                   <div className="space-y-1">
                     <span className="text-xs font-bold text-gold uppercase tracking-wider">Option A</span>
-                    <h4 className="text-sm font-semibold text-text-primary">Stream to Unlock</h4>
+                    <h4 className="text-sm font-semibold text-text-primary">Stream to View</h4>
                     {monetizationStatus === "no-provider" ? (
                       <p className="text-[11px] text-text-muted leading-relaxed">
                         No Web Monetization client detected. Learn how to{" "}
@@ -248,13 +248,13 @@ export function MonetizedGalleryView({
                   </Button>
                 </div>
 
-                {/* Path B: Buy Flat-Fee Access */}
+                {/* Path B: Ticketed Access */}
                 <div className="flex flex-col justify-between p-5 bg-bg-primary/50 border border-border rounded-xl text-left space-y-4">
                   <div className="space-y-1">
                     <span className="text-xs font-bold text-gold uppercase tracking-wider">Option B</span>
-                    <h4 className="text-sm font-semibold text-text-primary">Buy Permanent Access</h4>
+                    <h4 className="text-sm font-semibold text-text-primary">Ticketed Access</h4>
                     <p className="text-[11px] text-text-muted leading-relaxed">
-                      Pay once for permanent, unlimited access to this entire exhibition collection.
+                      A flat-fee, one-time pass to view this premium gallery.
                     </p>
                   </div>
 
@@ -272,7 +272,7 @@ export function MonetizedGalleryView({
                       amount={Number(gallery.accessFee)}
                       title={gallery.title}
                       initialWalletPointer={userWalletPointer}
-                      buttonText="Buy Access Pass"
+                      buttonText="Buy Ticket Pass"
                       className="w-full h-9 text-xs"
                     />
                   </div>

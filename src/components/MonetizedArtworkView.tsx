@@ -95,8 +95,8 @@ export function MonetizedArtworkView({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-      {/* Dynamic injection of the meta tag when locked */}
-      {!isUnlocked && artwork.artist.walletPointer && (
+      {/* Inject monetization tag for optional streaming support */}
+      {artwork.artist.walletPointer && (
         <WebMonetizationMeta paymentPointer={artwork.artist.walletPointer} />
       )}
 
@@ -146,13 +146,19 @@ export function MonetizedArtworkView({
           <div>
             <div className="flex items-center justify-between gap-4 mb-2">
               <h1 className="text-3xl font-heading font-bold text-text-primary truncate">{artwork.title}</h1>
-              <Badge variant={isUnlocked ? "success" : "warning"}>
-                {isUnlocked ? "Unlocked" : "Curated Premium"}
+              <Badge variant={!artwork.price ? "info" : isUnlocked ? "success" : "warning"}>
+                {!artwork.price ? "Free to View" : isUnlocked ? "Unlocked" : "Curated Premium"}
               </Badge>
             </div>
             <p className="text-sm text-text-secondary">
               Curated artwork by <span className="font-semibold text-text-primary">{artwork.artist.name}</span>
             </p>
+            {!artwork.price && artwork.artist.walletPointer && (
+              <div className="mt-3 text-xs text-gold bg-gold/10 border border-gold/20 rounded-lg px-3 py-1.5 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse"></span>
+                Free to View — Optional Streaming Active to Support the Artist
+              </div>
+            )}
           </div>
 
           {/* Smart Paywall Interface */}
@@ -171,7 +177,7 @@ export function MonetizedArtworkView({
               {/* Path A: Web Monetization */}
               <div className="space-y-3 p-4 bg-bg-primary/50 border border-border rounded-xl">
                 <div className="flex justify-between items-center">
-                  <h4 className="text-sm font-semibold text-text-primary">Path A: Stream to Unlock</h4>
+                  <h4 className="text-sm font-semibold text-text-primary">Path A: Stream to View</h4>
                   <Badge variant="info" className="text-[10px] py-0.5">Frictionless</Badge>
                 </div>
 
@@ -225,8 +231,8 @@ export function MonetizedArtworkView({
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <div>
-                    <h4 className="text-sm font-semibold text-text-primary">Path B: Buy Permanent Access</h4>
-                    <p className="text-xs text-text-muted mt-0.5">Pay once to unlock forever</p>
+                    <h4 className="text-sm font-semibold text-text-primary">Path B: Acquire Artwork</h4>
+                    <p className="text-xs text-text-muted mt-0.5">Outright purchase and ownership</p>
                   </div>
                   <span className="text-xl font-bold text-text-primary">
                     {artwork.price ? formatPrice(artwork.price, preferredCurrency) : "N/A"}
@@ -240,7 +246,7 @@ export function MonetizedArtworkView({
                     amount={Number(artwork.price)}
                     title={artwork.title}
                     initialWalletPointer={userWalletPointer}
-                    buttonText="Acquire Artwork & Unlock"
+                    buttonText="Acquire Artwork"
                     className="w-full h-12 text-sm shadow-[0_0_15px_rgba(124,92,252,0.3)]"
                   />
                 )}
@@ -257,7 +263,7 @@ export function MonetizedArtworkView({
                   <h3 className="text-sm font-bold text-text-primary">Premium Access Granted</h3>
                   <p className="text-xs text-text-secondary mt-0.5">
                     {hasPaidAccess
-                      ? "Permanently unlocked via flat-fee purchase"
+                      ? "Acquired via outright purchase"
                       : isSimulated
                       ? "Unlocked via simulated monetization stream"
                       : "Unlocked via active web monetization stream"}
