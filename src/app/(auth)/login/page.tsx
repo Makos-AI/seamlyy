@@ -32,9 +32,12 @@ function LoginForm() {
         setError(result.error)
         setLoading(false)
       }
-    } catch (err) {
-      // Re-throws the hidden Next.js redirect error so navigation works!
-      throw err
+    } catch (err: any) {
+      if (err.message === "NEXT_REDIRECT" || err.digest?.startsWith("NEXT_REDIRECT")) {
+        return
+      }
+      setError("An unexpected error occurred.")
+      setLoading(false)
     }
   }
 
