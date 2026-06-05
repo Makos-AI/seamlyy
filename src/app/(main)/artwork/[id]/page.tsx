@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
 import { Avatar, Badge, Button, Card } from "@/components/ui"
 import Link from "next/link"
-import { buyArtworkAction } from "@/actions/payments"
+import { CheckoutButton } from "@/components/CheckoutButton"
 import { auth } from "@/auth"
 import { formatPrice } from "@/lib/utils"
 
@@ -11,12 +11,14 @@ export default async function ArtworkPage({ params }: { params: Promise<{ id: st
   const session = await auth()
 
   let preferredCurrency = "USD"
+  let userWalletPointer = ""
   if (session?.user?.id) {
     const loggedInUser = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { preferredCurrency: true }
+      select: { preferredCurrency: true, walletPointer: true }
     })
     preferredCurrency = loggedInUser?.preferredCurrency || "USD"
+    userWalletPointer = loggedInUser?.walletPointer || ""
   }
 
   const artwork = await prisma.artwork.findUnique({
@@ -43,10 +45,16 @@ export default async function ArtworkPage({ params }: { params: Promise<{ id: st
               </div>
             </div>
 
-            <h1 className="text-4xl font-heading font-bold text-text-primary mb-4">{artwork.title}</h1>
-            
-            <div className="flex flex-wrap gap-2 mb-8">
-              {artwork.category && <Badge variant="neutral">{artwork.category}</Badge>}
+            <div className="relative aspect-square rounded-2xl overflow-hidden bg-bg-secondary border border-border shadow-2xl">
+              <img src={artwork.thumbnailUrl} alt={artwork.title} className="w-full h-full object-cover" />
+            </div>
+          </div>
+        </div>
+
+        <div className="order-1 lg:order-2">
+          <div className="max-w-md">
+            <div className="flex items-center justify-between mb-4">
+              <h1 className="text-4xl font-bold text-text-primary">{artwork.title}</h1>
               <Badge variant={artwork.status === 'SOLD' ? 'neutral' : 'info'}>
                 {artwork.status === 'SOLD' ? 'Sold Out' : artwork.status === 'NOT_FOR_SALE' ? 'Not for Sale' : 'Available'}
               </Badge>
@@ -60,11 +68,15 @@ export default async function ArtworkPage({ params }: { params: Promise<{ id: st
 
               {artwork.status === 'FIXED_PRICE' && (
                 <div className="fixed bottom-0 left-0 right-0 p-4 bg-bg-card/90 backdrop-blur-md border-t border-border z-50 md:absolute md:bottom-auto md:left-auto md:right-auto md:p-0 md:bg-transparent md:backdrop-blur-none md:border-none md:z-auto md:w-full">
-                  <form action={buyArtworkAction.bind(null, artwork.id)}>
-                    <Button type="submit" className="w-full h-14 text-lg shadow-[0_0_20px_rgba(124,92,252,0.4)] transition-shadow hover:shadow-[0_0_30px_rgba(124,92,252,0.6)]">
-                      Acquire Artwork
-                    </Button>
-                  </form>
+                  <CheckoutButton
+                    targetId={artwork.id}
+                    type="ARTWORK"
+                    amount={Number(artwork.price)}
+                    title={artwork.title}
+                    initialWalletPointer={userWalletPointer}
+                    buttonText="Acquire Artwork"
+                    className="w-full h-14 text-lg shadow-[0_0_20px_rgba(124,92,252,0.4)] transition-shadow hover:shadow-[0_0_30px_rgba(124,92,252,0.6)]"
+                  />
                 </div>
               )}
             </div>

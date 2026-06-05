@@ -3,7 +3,7 @@ import { notFound } from "next/navigation"
 import { Avatar, Button, Card, Badge } from "@/components/ui"
 import Link from "next/link"
 import { Metadata, ResolvingMetadata } from "next"
-import { unlockGalleryAction } from "@/actions/payments"
+import { CheckoutButton } from "@/components/CheckoutButton"
 import { auth } from "@/auth"
 import { formatPrice } from "@/lib/utils"
 
@@ -39,12 +39,14 @@ export default async function GalleryPage({ params }: { params: Promise<{ id: st
   const session = await auth()
 
   let preferredCurrency = "USD"
+  let userWalletPointer = ""
   if (session?.user?.id) {
     const loggedInUser = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { preferredCurrency: true }
+      select: { preferredCurrency: true, walletPointer: true }
     })
     preferredCurrency = loggedInUser?.preferredCurrency || "USD"
+    userWalletPointer = loggedInUser?.walletPointer || ""
   }
 
   const gallery = await prisma.gallery.findUnique({
@@ -124,11 +126,15 @@ export default async function GalleryPage({ params }: { params: Promise<{ id: st
                 Gain permanent access to this premium gallery to view all high-resolution artworks curated by {gallery.artist.name}.
               </p>
               <div className="flex flex-col items-center justify-center gap-4">
-                <form action={unlockGalleryAction.bind(null, gallery.id)}>
-                  <Button type="submit" size="lg" className="px-12">
-                    Unlock for {formatPrice(gallery.accessFee, preferredCurrency)}
-                  </Button>
-                </form>
+                <CheckoutButton
+                  targetId={gallery.id}
+                  type="GALLERY"
+                  amount={Number(gallery.accessFee)}
+                  title={gallery.title}
+                  initialWalletPointer={userWalletPointer}
+                  buttonText={`Unlock for ${formatPrice(gallery.accessFee, preferredCurrency)}`}
+                  className="px-12 h-12 text-base"
+                />
                 <p className="text-xs text-text-muted flex items-center gap-1">
                   Powered by Open Payments
                 </p>

@@ -190,6 +190,17 @@ export async function POST(req: NextRequest) {
 
   } catch (error: any) {
     console.error("Initiate payment error:", error)
-    return NextResponse.json({ error: error.message || "Failed to initiate payment" }, { status: 500 })
+    const details = {
+      message: error.message,
+      description: error.description,
+      status: error.status,
+      validationErrors: error.validationErrors,
+      details: error.details
+    }
+    console.error("Open Payments details:", JSON.stringify(details, null, 2))
+    return NextResponse.json({ 
+      error: error.description || error.message || "Failed to initiate payment",
+      details
+    }, { status: 500 })
   }
 }
