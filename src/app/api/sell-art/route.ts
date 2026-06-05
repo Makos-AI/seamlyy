@@ -3,6 +3,7 @@ import { cookies } from "next/headers"
 import { prisma } from "@/lib/prisma"
 import { getOpenPaymentsClient, formatWalletPointer } from "@/lib/open-payments"
 import { auth } from "@/auth"
+import { isPendingGrant } from "@interledger/open-payments"
 
 export async function POST(req: NextRequest) {
   try {
@@ -93,8 +94,31 @@ export async function POST(req: NextRequest) {
     const platformUnits = Math.round(amount * platformScaleFactor)
 
     // 4. Create Incoming Payment (Invoice) on Seamlyy's Wallet (100% of price)
+    // Request a non-interactive incoming payment grant first
+    const incomingGrant = await client.grant.request(
+      { url: platformWalletAddress.authServer },
+      {
+        access_token: {
+          access: [
+            {
+              type: "incoming-payment",
+              actions: ["create", "read", "list"],
+              identifier: platformWalletAddress.id
+            }
+          ]
+        }
+      }
+    )
+
+    if (isPendingGrant(incomingGrant)) {
+      throw new Error("Expected non-interactive incoming payment grant for platform")
+    }
+    if (!incomingGrant.access_token) {
+      throw new Error("Access token missing from incoming payment grant for platform")
+    }
+
     const incomingPayment = await client.incomingPayment.create(
-      { url: platformWalletAddress.resourceServer, accessToken: '' } as any,
+      { url: platformWalletAddress.resourceServer, accessToken: incomingGrant.access_token.value },
       {
         walletAddress: platformWalletAddress.id,
         incomingAmount: {
@@ -115,8 +139,30 @@ export async function POST(req: NextRequest) {
     })
 
     // 6. Create Quote on Buyer's Wallet
+    // Request a non-interactive quote grant from the buyer's auth server first
+    const quoteGrant = await client.grant.request(
+      { url: buyerWalletAddress.authServer },
+      {
+        access_token: {
+          access: [
+            {
+              type: "quote",
+              actions: ["create", "read"]
+            }
+          ]
+        }
+      }
+    )
+
+    if (isPendingGrant(quoteGrant)) {
+      throw new Error("Expected non-interactive quote grant for buyer")
+    }
+    if (!quoteGrant.access_token) {
+      throw new Error("Access token missing from quote grant for buyer")
+    }
+
     const quote = await client.quote.create(
-      { url: buyerWalletAddress.resourceServer, accessToken: '' } as any,
+      { url: buyerWalletAddress.resourceServer, accessToken: quoteGrant.access_token.value },
       {
         walletAddress: buyerWalletAddress.id,
         receiver: incomingPayment.id,
@@ -137,8 +183,7 @@ export async function POST(req: NextRequest) {
               actions: ["create", "read", "list"],
               identifier: buyerWalletAddress.id,
               limits: {
-                debitAmount: quote.debitAmount,
-                receiveAmount: quote.receiveAmount
+                debitAmount: quote.debitAmount
               } as any
             }
           ]

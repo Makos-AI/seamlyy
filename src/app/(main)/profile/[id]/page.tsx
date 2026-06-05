@@ -22,7 +22,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   const user = await prisma.user.findUnique({
     where: { id },
     include: {
-      artworks: { where: { status: { not: 'NOT_FOR_SALE' }, galleryId: null } },
+      artworks: { where: { galleryId: null } },
       galleries: true,
       followers: true,
       following: true,
@@ -90,8 +90,8 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                       <div className="relative aspect-square overflow-hidden bg-bg-tertiary">
                         <img src={art.thumbnailUrl} alt={art.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                         <div className="absolute top-3 right-3 flex flex-col gap-2">
-                          <Badge variant={art.status === 'SOLD' ? 'neutral' : 'info'}>
-                            {art.status === 'SOLD' ? 'Sold' : formatPrice(Number(art.price), preferredCurrency)}
+                          <Badge variant={art.status === 'SOLD' ? 'neutral' : art.status === 'NOT_FOR_SALE' ? 'neutral' : 'info'}>
+                            {art.status === 'SOLD' ? 'Sold' : art.status === 'NOT_FOR_SALE' ? 'Not for Sale' : formatPrice(Number(art.price), preferredCurrency)}
                           </Badge>
                         </div>
                       </div>

@@ -136,8 +136,7 @@ export async function initiatePayment(params: {
               actions: ["create", "read", "list"],
               identifier: buyerWalletAddress.id,
               limits: {
-                debitAmount: quoteSeller.debitAmount,
-                receiveAmount: quoteSeller.receiveAmount
+                debitAmount: quoteSeller.debitAmount
               } as any
             },
             {
@@ -145,8 +144,7 @@ export async function initiatePayment(params: {
               actions: ["create", "read", "list"],
               identifier: buyerWalletAddress.id,
               limits: {
-                debitAmount: quotePlatform.debitAmount,
-                receiveAmount: quotePlatform.receiveAmount
+                debitAmount: quotePlatform.debitAmount
               } as any
             }
           ]

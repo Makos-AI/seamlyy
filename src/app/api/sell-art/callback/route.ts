@@ -112,8 +112,31 @@ export async function GET(req: NextRequest) {
       const artistUnits = Math.round(finalArtistAmount * Math.pow(10, artistWalletAddress.assetScale))
 
       // a. Create Incoming Payment (Invoice) on Artist's Wallet (95%)
+      // Request a non-interactive incoming payment grant first
+      const incomingGrantArtist = await client.grant.request(
+        { url: artistWalletAddress.authServer },
+        {
+          access_token: {
+            access: [
+              {
+                type: "incoming-payment",
+                actions: ["create", "read", "list"],
+                identifier: artistWalletAddress.id
+              }
+            ]
+          }
+        }
+      )
+
+      if (isPendingGrant(incomingGrantArtist)) {
+        throw new Error("Expected non-interactive incoming payment grant for artist")
+      }
+      if (!incomingGrantArtist.access_token) {
+        throw new Error("Access token missing from incoming payment grant for artist")
+      }
+
       const incomingPaymentArtist = await client.incomingPayment.create(
-        { url: artistWalletAddress.resourceServer, accessToken: '' } as any,
+        { url: artistWalletAddress.resourceServer, accessToken: incomingGrantArtist.access_token.value },
         {
           walletAddress: artistWalletAddress.id,
           incomingAmount: {
@@ -134,8 +157,30 @@ export async function GET(req: NextRequest) {
       })
 
       // c. Create Quote on Seamlyy's Platform Wallet
+      // Request a non-interactive quote grant from Seamlyy's auth server first
+      const quoteGrantArtist = await client.grant.request(
+        { url: platformWalletAddress.authServer },
+        {
+          access_token: {
+            access: [
+              {
+                type: "quote",
+                actions: ["create", "read"]
+              }
+            ]
+          }
+        }
+      )
+
+      if (isPendingGrant(quoteGrantArtist)) {
+        throw new Error("Expected non-interactive quote grant for artist payout")
+      }
+      if (!quoteGrantArtist.access_token) {
+        throw new Error("Access token missing from quote grant for artist payout")
+      }
+
       const quoteArtist = await client.quote.create(
-        { url: platformWalletAddress.resourceServer, accessToken: '' } as any,
+        { url: platformWalletAddress.resourceServer, accessToken: quoteGrantArtist.access_token.value },
         {
           walletAddress: platformWalletAddress.id,
           receiver: incomingPaymentArtist.id,

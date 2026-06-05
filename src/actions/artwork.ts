@@ -54,6 +54,9 @@ export async function createArtworkAction(data: {
     })
 
     revalidatePath("/dashboard")
+    revalidatePath("/explore")
+    revalidatePath(`/profile/${session.user.id}`)
+    revalidatePath("/")
     return { success: true, artworkId: artwork.id }
   } catch (error: any) {
     console.error("Create artwork action error:", error)
@@ -86,6 +89,9 @@ export async function createGalleryAction(data: {
     })
 
     revalidatePath("/dashboard")
+    revalidatePath("/explore")
+    revalidatePath(`/profile/${session.user.id}`)
+    revalidatePath("/")
     return { success: true, galleryId: gallery.id }
   } catch (error: any) {
     console.error("Create gallery action error:", error)

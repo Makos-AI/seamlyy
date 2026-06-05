@@ -67,22 +67,20 @@ export default async function HomePage() {
             </div>
             
             <div className="hidden lg:block">
-              {recentArtworks[0] && (
-                <div className="relative">
-                  <div className="rounded-2xl overflow-hidden border border-border shadow-2xl shadow-black/30 animate-float">
-                    <img 
-                      src={recentArtworks[0].thumbnailUrl} 
-                      alt={recentArtworks[0].title}
-                      className="w-full h-[420px] object-cover"
-                    />
-                  </div>
-                  <div className="absolute -bottom-4 -left-4 bg-bg-card border border-border rounded-xl p-4 shadow-xl">
-                    <p className="text-xs text-text-muted mb-1">Featured</p>
-                    <p className="font-semibold text-text-primary">{recentArtworks[0].title}</p>
-                    <p className="text-sm text-gold">{formatPrice(Number(recentArtworks[0].price), preferredCurrency)}</p>
-                  </div>
+              <div className="relative">
+                <div className="rounded-2xl overflow-hidden border border-border shadow-2xl shadow-black/30 animate-float">
+                  <img 
+                    src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop" 
+                    alt="Ethereal Flow"
+                    className="w-full h-[420px] object-cover"
+                  />
                 </div>
-              )}
+                <div className="absolute -bottom-4 -left-4 bg-bg-card border border-border rounded-xl p-4 shadow-xl">
+                  <p className="text-xs text-text-muted mb-1">Featured</p>
+                  <p className="font-semibold text-text-primary">Ethereal Flow</p>
+                  <p className="text-sm text-gold">{formatPrice(850.00, preferredCurrency)}</p>
+                </div>
+              </div>
             </div>
           </div>
 
