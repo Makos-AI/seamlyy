@@ -48,9 +48,10 @@ export function MonetizedGalleryView({
   const isUnlocked = hasPaidAccess || monetizationStatus === "streaming" || isSimulated
 
   React.useEffect(() => {
-    if (isUnlocked) return
-
-    setMonetizationStatus("checking")
+    // Listen to Web Monetization events continuously to enable testing even after paid access
+    if (monetizationStatus !== "streaming") {
+      setMonetizationStatus("checking")
+    }
     const doc = document as any
     const walletPointer = gallery.artist.walletPointer
 
@@ -129,7 +130,7 @@ export function MonetizedGalleryView({
         doc.monetization.removeEventListener("monetizationprogress", handleProgress)
       }
     }
-  }, [isUnlocked, gallery.artist.walletPointer])
+  }, [gallery.artist.walletPointer])
 
   const handleSimulateStream = () => {
     setIsSimulated(true)

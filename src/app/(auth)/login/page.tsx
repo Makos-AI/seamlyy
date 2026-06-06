@@ -81,42 +81,6 @@ function LoginForm() {
           256-bit Encrypted
         </div>
 
-        {/* Demo Accounts Quick-Fill */}
-        <div className="mt-6 pt-6 border-t border-border">
-          <p className="text-xs text-text-muted text-center mb-3">Quick Login (Demo Accounts)</p>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              className="col-span-2 text-xs py-2 px-3 rounded-lg border border-border bg-bg-primary hover:bg-bg-tertiary text-text-primary transition-colors cursor-pointer"
-              onClick={() => {
-                setEmail("iii.7@gmail.com")
-                setPassword("12345678")
-              }}
-            >
-              👩‍🎨 Artist Demo
-            </button>
-            <button
-              type="button"
-              className="text-xs py-2 px-3 rounded-lg border border-border bg-bg-primary hover:bg-bg-tertiary text-text-primary transition-colors cursor-pointer"
-              onClick={() => {
-                setEmail("collector@example.com")
-                setPassword("password123")
-              }}
-            >
-              💼 Collector Demo 1
-            </button>
-            <button
-              type="button"
-              className="text-xs py-2 px-3 rounded-lg border border-border bg-bg-primary hover:bg-bg-tertiary text-text-primary transition-colors cursor-pointer"
-              onClick={() => {
-                setEmail("collector2@example.com")
-                setPassword("password123")
-              }}
-            >
-              💼 Collector Demo 2
-            </button>
-          </div>
-        </div>
       </div>
       
       <p className="mt-6 text-center text-sm text-text-muted">

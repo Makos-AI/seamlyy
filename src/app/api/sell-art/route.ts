@@ -58,6 +58,7 @@ export async function POST(req: NextRequest) {
     // 2. Fetch the Seller (Artist) to get their wallet pointer
     let sellerId = ""
     let description = ""
+    let sellerWalletPointer = ""
     
     if (type === 'ARTWORK') {
       const artwork = await prisma.artwork.findUnique({
@@ -68,6 +69,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Artwork or Artist not found" }, { status: 404 })
       }
       sellerId = artwork.artistId
+      sellerWalletPointer = artwork.artist.walletPointer || "$rafiki.money/p/amara"
       description = `Seamlyy - Purchase Artwork: ${artwork.title}`
     } else if (type === 'GALLERY') {
       const gallery = await prisma.gallery.findUnique({
@@ -78,24 +80,66 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Gallery or Artist not found" }, { status: 404 })
       }
       sellerId = gallery.artistId
+      sellerWalletPointer = gallery.artist.walletPointer || "$rafiki.money/p/amara"
       description = `Seamlyy - Unlock Gallery: ${gallery.title}`
     } else {
       return NextResponse.json({ error: "Invalid type" }, { status: 400 })
     }
 
-    // 3. Get Seamlyy's Platform Wallet Address info
+    // 3. Get Wallet Address info for both Seller (Artist) and Platform
+    const formattedSellerWallet = formatWalletPointer(sellerWalletPointer)
     const platformWalletUrl = formatWalletPointer(process.env.WALLET_ADDRESS!)
+    
+    const sellerWalletAddress = await client.walletAddress.get({
+      url: formattedSellerWallet
+    })
     const platformWalletAddress = await client.walletAddress.get({
       url: platformWalletUrl
     })
 
-    // Calculate invoice scale units for 100% of the price on Seamlyy's wallet
-    const platformScaleFactor = Math.pow(10, platformWalletAddress.assetScale)
-    const platformUnits = Math.round(amount * platformScaleFactor)
+    // Calculate split units based on each wallet's assetScale (95% to Seller, 5% to Platform)
+    const sellerScaleFactor = Math.pow(10, sellerWalletAddress.assetScale)
+    const sellerUnits = Math.round((amount * 0.95) * sellerScaleFactor)
 
-    // 4. Create Incoming Payment (Invoice) on Seamlyy's Wallet (100% of price)
-    // Request a non-interactive incoming payment grant first
-    const incomingGrant = await client.grant.request(
+    const platformScaleFactor = Math.pow(10, platformWalletAddress.assetScale)
+    const platformUnits = Math.round((amount * 0.05) * platformScaleFactor)
+
+    // 4. Create Incoming Payment on Seller's Wallet (95%)
+    const incomingGrantSeller = await client.grant.request(
+      { url: sellerWalletAddress.authServer },
+      {
+        access_token: {
+          access: [
+            {
+              type: "incoming-payment",
+              actions: ["create", "read", "list"],
+              identifier: sellerWalletAddress.id
+            }
+          ]
+        }
+      }
+    )
+    if (isPendingGrant(incomingGrantSeller) || !incomingGrantSeller.access_token) {
+      throw new Error("Expected non-interactive incoming payment grant for seller")
+    }
+
+    const incomingPaymentSeller = await client.incomingPayment.create(
+      { url: sellerWalletAddress.resourceServer, accessToken: incomingGrantSeller.access_token.value },
+      {
+        walletAddress: sellerWalletAddress.id,
+        incomingAmount: {
+          value: sellerUnits.toString(),
+          assetCode: sellerWalletAddress.assetCode,
+          assetScale: sellerWalletAddress.assetScale
+        },
+        metadata: {
+          description: `Seamlyy - ${type} Purchase (Artist Share)`,
+        }
+      }
+    )
+
+    // Create Incoming Payment on Platform's Wallet (5%)
+    const incomingGrantPlatform = await client.grant.request(
       { url: platformWalletAddress.authServer },
       {
         access_token: {
@@ -109,16 +153,12 @@ export async function POST(req: NextRequest) {
         }
       }
     )
-
-    if (isPendingGrant(incomingGrant)) {
+    if (isPendingGrant(incomingGrantPlatform) || !incomingGrantPlatform.access_token) {
       throw new Error("Expected non-interactive incoming payment grant for platform")
     }
-    if (!incomingGrant.access_token) {
-      throw new Error("Access token missing from incoming payment grant for platform")
-    }
 
-    const incomingPayment = await client.incomingPayment.create(
-      { url: platformWalletAddress.resourceServer, accessToken: incomingGrant.access_token.value },
+    const incomingPaymentPlatform = await client.incomingPayment.create(
+      { url: platformWalletAddress.resourceServer, accessToken: incomingGrantPlatform.access_token.value },
       {
         walletAddress: platformWalletAddress.id,
         incomingAmount: {
@@ -127,7 +167,7 @@ export async function POST(req: NextRequest) {
           assetScale: platformWalletAddress.assetScale
         },
         metadata: {
-          description,
+          description: `Seamlyy - ${type} Purchase (Platform Commission)`,
         }
       }
     )
@@ -138,9 +178,9 @@ export async function POST(req: NextRequest) {
       url: formattedBuyerWallet
     })
 
-    // 6. Create Quote on Buyer's Wallet
-    // Request a non-interactive quote grant from the buyer's auth server first
-    const quoteGrant = await client.grant.request(
+    // 6. Create Quotes on Buyer's Wallet
+    // Quote for Seller
+    const quoteGrantSeller = await client.grant.request(
       { url: buyerWalletAddress.authServer },
       {
         access_token: {
@@ -153,22 +193,46 @@ export async function POST(req: NextRequest) {
         }
       }
     )
-
-    if (isPendingGrant(quoteGrant)) {
-      throw new Error("Expected non-interactive quote grant for buyer")
-    }
-    if (!quoteGrant.access_token) {
-      throw new Error("Access token missing from quote grant for buyer")
+    if (isPendingGrant(quoteGrantSeller) || !quoteGrantSeller.access_token) {
+      throw new Error("Expected non-interactive quote grant for seller payment")
     }
 
-    const quote = await client.quote.create(
-      { url: buyerWalletAddress.resourceServer, accessToken: quoteGrant.access_token.value },
+    const quoteSeller = await client.quote.create(
+      { url: buyerWalletAddress.resourceServer, accessToken: quoteGrantSeller.access_token.value },
       {
         walletAddress: buyerWalletAddress.id,
-        receiver: incomingPayment.id,
+        receiver: incomingPaymentSeller.id,
         method: "ilp"
       }
     )
+
+    // Quote for Platform
+    const quoteGrantPlatform = await client.grant.request(
+      { url: buyerWalletAddress.authServer },
+      {
+        access_token: {
+          access: [
+            {
+              type: "quote",
+              actions: ["create", "read"]
+            }
+          ]
+        }
+      }
+    )
+    if (isPendingGrant(quoteGrantPlatform) || !quoteGrantPlatform.access_token) {
+      throw new Error("Expected non-interactive quote grant for platform payment")
+    }
+
+    const quotePlatform = await client.quote.create(
+      { url: buyerWalletAddress.resourceServer, accessToken: quoteGrantPlatform.access_token.value },
+      {
+        walletAddress: buyerWalletAddress.id,
+        receiver: incomingPaymentPlatform.id,
+        method: "ilp"
+      }
+    )
+
 
     // 7. Request GNAP interactive grant from Buyer's Authorization Server
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
@@ -183,7 +247,15 @@ export async function POST(req: NextRequest) {
               actions: ["create", "read", "list"],
               identifier: buyerWalletAddress.id,
               limits: {
-                debitAmount: quote.debitAmount
+                debitAmount: quoteSeller.debitAmount
+              } as any
+            },
+            {
+              type: "outgoing-payment",
+              actions: ["create", "read", "list"],
+              identifier: buyerWalletAddress.id,
+              limits: {
+                debitAmount: quotePlatform.debitAmount
               } as any
             }
           ]
@@ -216,6 +288,11 @@ export async function POST(req: NextRequest) {
         platformFee: amount * 0.05,
         status: 'PENDING',
         openPaymentsUrl: grantRequest.continue?.uri,
+        shippingDetails: JSON.stringify({
+          quoteSellerId: quoteSeller.id,
+          quotePlatformId: quotePlatform.id,
+          continueToken: grantRequest.continue?.access_token.value
+        })
       }
     })
 
@@ -223,8 +300,8 @@ export async function POST(req: NextRequest) {
     const cookieStore = await cookies()
     cookieStore.set('op_continue_uri', grantRequest.continue?.uri || '', { httpOnly: true, secure: true, sameSite: 'lax' })
     cookieStore.set('op_continue_token', grantRequest.continue?.access_token.value || '', { httpOnly: true, secure: true, sameSite: 'lax' })
-    cookieStore.set('op_invoice_id', incomingPayment.id, { httpOnly: true, secure: true, sameSite: 'lax' })
-    cookieStore.set('op_quote_id', quote.id, { httpOnly: true, secure: true, sameSite: 'lax' })
+    cookieStore.set('op_quote_seller_id', quoteSeller.id, { httpOnly: true, secure: true, sameSite: 'lax' })
+    cookieStore.set('op_quote_platform_id', quotePlatform.id, { httpOnly: true, secure: true, sameSite: 'lax' })
     cookieStore.set('op_buyer_wallet', buyerWalletAddress.id, { httpOnly: true, secure: true, sameSite: 'lax' })
 
     return NextResponse.json({

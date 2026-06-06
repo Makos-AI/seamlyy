@@ -4,6 +4,8 @@ import { Metadata, ResolvingMetadata } from "next"
 import { auth } from "@/auth"
 import { MonetizedGalleryView } from "@/components/MonetizedGalleryView"
 
+export const dynamic = "force-dynamic"
+
 export async function generateMetadata(
   { params }: { params: Promise<{ id: string }> },
   parent: ResolvingMetadata

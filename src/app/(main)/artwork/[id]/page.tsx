@@ -3,6 +3,8 @@ import { notFound } from "next/navigation"
 import { auth } from "@/auth"
 import { MonetizedArtworkView } from "@/components/MonetizedArtworkView"
 
+export const dynamic = "force-dynamic"
+
 export default async function ArtworkPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const session = await auth()

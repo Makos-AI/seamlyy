@@ -42,9 +42,10 @@ export function MonetizedArtworkView({
   const isUnlocked = hasPaidAccess || monetizationStatus === "streaming" || isSimulated
 
   React.useEffect(() => {
-    if (isUnlocked) return
-
-    setMonetizationStatus("checking")
+    // Listen to Web Monetization events continuously to enable testing even after paid access
+    if (monetizationStatus !== "streaming") {
+      setMonetizationStatus("checking")
+    }
     const doc = document as any
     const walletPointer = artwork.artist.walletPointer
 
@@ -123,7 +124,7 @@ export function MonetizedArtworkView({
         doc.monetization.removeEventListener("monetizationprogress", handleProgress)
       }
     }
-  }, [isUnlocked, artwork.artist.walletPointer])
+  }, [artwork.artist.walletPointer])
 
   // Mock simulator for local testing
   const handleSimulateStream = () => {
@@ -292,30 +293,59 @@ export function MonetizedArtworkView({
             </Card>
           ) : (
             /* Unlocked Controls & Info */
-            <Card className="p-6 border-success/30 bg-gradient-to-br from-success/5 to-transparent space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-success/20 flex items-center justify-center text-success">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <div className="space-y-4">
+              <Card className="p-6 border-success/30 bg-gradient-to-br from-success/5 to-transparent space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-success/20 flex items-center justify-center text-success">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-text-primary">Premium Access Granted</h3>
+                    <p className="text-xs text-text-secondary mt-0.5">
+                      {hasPaidAccess
+                        ? "Acquired via outright purchase"
+                        : isSimulated
+                        ? "Unlocked via simulated monetization stream"
+                        : "Unlocked via active web monetization stream"}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-sm font-bold text-text-primary">Premium Access Granted</h3>
-                  <p className="text-xs text-text-secondary mt-0.5">
-                    {hasPaidAccess
-                      ? "Acquired via outright purchase"
-                      : isSimulated
-                      ? "Unlocked via simulated monetization stream"
-                      : "Unlocked via active web monetization stream"}
-                  </p>
-                </div>
-              </div>
 
-              {monetizationStatus === "streaming" && streamedAmount > 0 && (
-                <div className="p-3 bg-bg-secondary border border-border rounded-xl font-mono text-xs text-text-secondary flex justify-between">
-                  <span>Streamed:</span>
-                  <span className="text-gold font-semibold">{streamedAmount} {assetCode || "Units"}</span>
-                </div>
+                {monetizationStatus === "streaming" && streamedAmount > 0 && (
+                  <div className="p-3 bg-bg-secondary border border-border rounded-xl font-mono text-xs text-text-secondary flex justify-between">
+                    <span>Streamed:</span>
+                    <span className="text-gold font-semibold">{streamedAmount} {assetCode || "Units"}</span>
+                  </div>
+                )}
+              </Card>
+
+              {/* If accessed via streaming but not owned yet, allow acquiring it */}
+              {!hasPaidAccess && artwork.price && (
+                <Card className="p-6 border-gold/20 bg-bg-secondary space-y-4">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h4 className="text-sm font-semibold text-text-primary">Acquire Artwork</h4>
+                      <p className="text-xs text-text-muted mt-0.5">Outright purchase and permanent ownership</p>
+                    </div>
+                    <span className="text-xl font-bold text-text-primary">
+                      {formatPrice(artwork.price, preferredCurrency)}
+                    </span>
+                  </div>
+
+                  {artwork.status === "FIXED_PRICE" && (
+                    <CheckoutButton
+                      targetId={artwork.id}
+                      type="ARTWORK"
+                      amount={Number(artwork.price)}
+                      title={artwork.title}
+                      initialWalletPointer={userWalletPointer}
+                      buttonText="Acquire Artwork"
+                      className="w-full h-12 text-sm shadow-[0_0_15px_rgba(124,92,252,0.3)]"
+                    />
+                  )}
+                </Card>
               )}
-            </Card>
+            </div>
           )}
 
           {/* Detailed Info */}

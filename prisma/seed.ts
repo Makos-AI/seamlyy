@@ -152,12 +152,12 @@ async function main() {
     data: {
       artistId: artist2.id,
       galleryId: gallery2.id,
-      title: 'Cyber Serengeti II',
-      description: 'Exploring the boundary-pushing futuristic landscapes of Africa.',
-      medium: 'Generative Art',
+      title: 'Vibrant Echoes',
+      description: 'An abstract exploration of vibrant tones and emotional depth.',
+      medium: 'Acrylic on Canvas',
       price: 2200.00,
       status: 'FIXED_PRICE',
-      thumbnailUrl: '/art/artwork3.jpg',
+      thumbnailUrl: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?q=80&w=800&auto=format&fit=crop',
       thumbnailKey: 'art7_thumb',
       highResKey: 'art7_high'
     }
@@ -167,12 +167,12 @@ async function main() {
     data: {
       artistId: artist2.id,
       galleryId: gallery2.id,
-      title: 'Unbound Spirit II',
-      description: 'A striking study on modern composition and digital textures.',
-      medium: 'Photography & Digital',
+      title: 'Ethereal Flow',
+      description: 'Dynamic fluid abstract composition.',
+      medium: 'Fluid Acrylics',
       price: 450.00,
       status: 'FIXED_PRICE',
-      thumbnailUrl: '/art/artwork4.jpg',
+      thumbnailUrl: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=800&auto=format&fit=crop',
       thumbnailKey: 'art8_thumb',
       highResKey: 'art8_high'
     }
@@ -196,14 +196,42 @@ async function main() {
   await prisma.artwork.create({
     data: {
       artistId: artist2.id,
-      title: 'Luminous Rhythm',
-      description: 'A standalone piece exploring the vibrant flow of modern African music and movement.',
-      medium: 'Mixed Media',
+      title: 'Cosmic Symphony',
+      description: 'A standalone abstract piece exploring movement and color theory.',
+      medium: 'Oil Abstract',
       price: 1200.00,
       status: 'FIXED_PRICE',
-      thumbnailUrl: '/art/artwork5.jpg',
+      thumbnailUrl: 'https://images.unsplash.com/photo-1605721911519-3dfeb3be25e7?q=80&w=800&auto=format&fit=crop',
       thumbnailKey: 'art9_thumb',
       highResKey: 'art9_high'
+    }
+  })
+
+  await prisma.artwork.create({
+    data: {
+      artistId: artist2.id,
+      title: 'Geometric Dream',
+      description: 'Constructivist geometric shapes on canvas.',
+      medium: 'Mixed Media',
+      price: 1100.00,
+      status: 'FIXED_PRICE',
+      thumbnailUrl: 'https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?q=80&w=800&auto=format&fit=crop',
+      thumbnailKey: 'art10_thumb',
+      highResKey: 'art10_high'
+    }
+  })
+
+  await prisma.artwork.create({
+    data: {
+      artistId: artist2.id,
+      title: 'Chroma Ripples',
+      description: 'Digital abstract study of liquid color dynamics.',
+      medium: 'Digital Painting',
+      price: 750.00,
+      status: 'FIXED_PRICE',
+      thumbnailUrl: 'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?q=80&w=800&auto=format&fit=crop',
+      thumbnailKey: 'art11_thumb',
+      highResKey: 'art11_high'
     }
   })
 
