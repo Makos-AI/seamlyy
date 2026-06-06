@@ -52,28 +52,49 @@ export function MonetizedGalleryView({
 
     setMonetizationStatus("checking")
     const doc = document as any
+    const walletPointer = gallery.artist.walletPointer
 
+    const handleProgress = (e: any) => {
+      setMonetizationStatus("streaming")
+      let amount = 0
+      let currencyCode = ""
+
+      if (e.amountSent) {
+        amount = Number(e.amountSent.value)
+        currencyCode = e.amountSent.currency
+      } else if (e.detail?.amountSent) {
+        amount = Number(e.detail.amountSent.value)
+        currencyCode = e.detail.amountSent.currency
+      } else if (e.detail?.amount) {
+        amount = Number(e.detail.amount)
+        currencyCode = e.detail.assetCode || e.detail.currency || ""
+      }
+
+      if (amount > 0) {
+        setStreamedAmount((prev) => prev + amount)
+      }
+      if (currencyCode) {
+        setAssetCode(currencyCode)
+      }
+    }
+
+    const handleStart = () => {
+      setMonetizationStatus("streaming")
+    }
+
+    const handlePending = () => {
+      setMonetizationStatus("pending")
+    }
+
+    // 1. Listen for standard monetization events on the link element
+    let linkEl = document.querySelector('link[rel="monetization"]')
+    if (linkEl) {
+      linkEl.addEventListener("monetization", handleProgress)
+    }
+
+    // 2. Fallback to legacy document.monetization events
     if (doc.monetization) {
       setMonetizationStatus("detected")
-
-      const handlePending = () => {
-        setMonetizationStatus("pending")
-      }
-
-      const handleStart = () => {
-        setMonetizationStatus("streaming")
-      }
-
-      const handleProgress = (e: any) => {
-        setMonetizationStatus("streaming")
-        if (e.detail?.amount) {
-          setStreamedAmount((prev) => prev + Number(e.detail.amount))
-        }
-        if (e.detail?.assetCode) {
-          setAssetCode(e.detail.assetCode)
-        }
-      }
-
       doc.monetization.addEventListener("monetizationpending", handlePending)
       doc.monetization.addEventListener("monetizationstart", handleStart)
       doc.monetization.addEventListener("monetizationprogress", handleProgress)
@@ -81,16 +102,34 @@ export function MonetizedGalleryView({
       if (doc.monetization.state === "started") {
         setMonetizationStatus("streaming")
       }
+    } else if (!linkEl) {
+      // Retry checking for the link tag shortly after mount/render
+      const timeout = setTimeout(() => {
+        const checkLink = document.querySelector('link[rel="monetization"]')
+        if (checkLink) {
+          checkLink.addEventListener("monetization", handleProgress)
+          setMonetizationStatus("detected")
+        } else {
+          setMonetizationStatus("no-provider")
+        }
+      }, 1000)
+      
+      return () => clearTimeout(timeout)
+    } else {
+      setMonetizationStatus("detected")
+    }
 
-      return () => {
+    return () => {
+      if (linkEl) {
+        linkEl.removeEventListener("monetization", handleProgress)
+      }
+      if (doc.monetization) {
         doc.monetization.removeEventListener("monetizationpending", handlePending)
         doc.monetization.removeEventListener("monetizationstart", handleStart)
         doc.monetization.removeEventListener("monetizationprogress", handleProgress)
       }
-    } else {
-      setMonetizationStatus("no-provider")
     }
-  }, [isUnlocked])
+  }, [isUnlocked, gallery.artist.walletPointer])
 
   const handleSimulateStream = () => {
     setIsSimulated(true)

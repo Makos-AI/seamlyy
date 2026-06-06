@@ -6,29 +6,35 @@ interface WebMonetizationMetaProps {
   paymentPointer: string | null | undefined
 }
 
+function formatPaymentPointer(pointer: string) {
+  if (!pointer) return ""
+  let clean = pointer.trim()
+  if (clean.startsWith("$$")) {
+    clean = clean.slice(2)
+  } else if (clean.startsWith("$")) {
+    clean = clean.slice(1)
+  }
+  if (!clean.startsWith("http://") && !clean.startsWith("https://")) {
+    return `https://${clean}`
+  }
+  return clean
+}
+
 export function WebMonetizationMeta({ paymentPointer }: WebMonetizationMetaProps) {
+  const formattedUrl = paymentPointer ? formatPaymentPointer(paymentPointer) : ""
+
   useEffect(() => {
-    if (!paymentPointer) return
-
-    // Find or create meta tag
-    let meta = document.querySelector('meta[name="monetization"]') as HTMLMetaElement
-    if (!meta) {
-      meta = document.createElement("meta")
-      meta.name = "monetization"
-      document.head.appendChild(meta)
+    if (formattedUrl) {
+      console.log(`[Web Monetization] Tag active for: ${formattedUrl}`)
     }
-    meta.content = paymentPointer
+  }, [formattedUrl])
 
-    console.log(`[Web Monetization] Meta tag injected: ${paymentPointer}`)
+  if (!formattedUrl) return null
 
-    return () => {
-      // Clean up when unmounting or paymentPointer changes
-      if (meta) {
-        meta.remove()
-        console.log(`[Web Monetization] Meta tag removed`)
-      }
-    }
-  }, [paymentPointer])
-
-  return null
+  return (
+    <>
+      <link rel="monetization" href={formattedUrl} />
+      <meta name="monetization" content={formattedUrl} />
+    </>
+  )
 }
