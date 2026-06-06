@@ -4,6 +4,33 @@ import { Card, Badge, Button } from "@/components/ui"
 import { auth } from "@/auth"
 import { formatPrice } from "@/lib/utils"
 
+import { unstable_cache } from "next/cache"
+
+const getRecentArtworks = unstable_cache(
+  async () => {
+    return await prisma.artwork.findMany({
+      where: { status: { not: 'NOT_FOR_SALE' } },
+      include: { artist: true },
+      orderBy: { createdAt: 'desc' },
+      take: 8
+    })
+  },
+  ["recent-artworks"],
+  { tags: ["artworks"] }
+)
+
+const getPremiumGalleries = unstable_cache(
+  async () => {
+    return await prisma.gallery.findMany({
+      include: { artist: true },
+      orderBy: { createdAt: 'desc' },
+      take: 4
+    })
+  },
+  ["premium-galleries"],
+  { tags: ["galleries"] }
+)
+
 export default async function HomePage() {
   const session = await auth()
   let preferredCurrency = "USD"
@@ -15,18 +42,9 @@ export default async function HomePage() {
     preferredCurrency = dbUser?.preferredCurrency || "USD"
   }
 
-  const recentArtworks = await prisma.artwork.findMany({
-    where: { status: { not: 'NOT_FOR_SALE' } },
-    include: { artist: true },
-    orderBy: { createdAt: 'desc' },
-    take: 8
-  })
+  const recentArtworks = await getRecentArtworks()
+  const premiumGalleries = await getPremiumGalleries()
 
-  const premiumGalleries = await prisma.gallery.findMany({
-    include: { artist: true },
-    orderBy: { createdAt: 'desc' },
-    take: 4
-  })
 
   return (
     <div className="flex flex-col">

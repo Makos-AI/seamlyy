@@ -4,6 +4,20 @@ import { Card, Badge } from "@/components/ui"
 import { auth } from "@/auth"
 import { formatPrice } from "@/lib/utils"
 
+import { unstable_cache } from "next/cache"
+
+const getExploreArtworks = unstable_cache(
+  async () => {
+    return await prisma.artwork.findMany({
+      include: { artist: true },
+      orderBy: { createdAt: 'desc' },
+      take: 12
+    })
+  },
+  ["explore-artworks"],
+  { tags: ["artworks"] }
+)
+
 export default async function ExplorePage() {
   const session = await auth()
   let preferredCurrency = "USD"
@@ -15,11 +29,8 @@ export default async function ExplorePage() {
     preferredCurrency = dbUser?.preferredCurrency || "USD"
   }
 
-  const artworks = await prisma.artwork.findMany({
-    include: { artist: true },
-    orderBy: { createdAt: 'desc' },
-    take: 12
-  })
+  const artworks = await getExploreArtworks()
+
 
   return (
     <div className="container mx-auto max-w-6xl px-4 py-12">

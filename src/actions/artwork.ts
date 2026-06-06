@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth"
-import { revalidatePath } from "next/cache"
+import { revalidatePath, updateTag } from "next/cache"
 
 export async function getArtistGalleries() {
   const session = await auth()
@@ -57,6 +57,7 @@ export async function createArtworkAction(data: {
     revalidatePath("/explore")
     revalidatePath(`/profile/${session.user.id}`)
     revalidatePath("/")
+    updateTag("artworks")
     return { success: true, artworkId: artwork.id }
   } catch (error: any) {
     console.error("Create artwork action error:", error)
@@ -92,6 +93,8 @@ export async function createGalleryAction(data: {
     revalidatePath("/explore")
     revalidatePath(`/profile/${session.user.id}`)
     revalidatePath("/")
+    updateTag("galleries")
+    updateTag("artworks")
     return { success: true, galleryId: gallery.id }
   } catch (error: any) {
     console.error("Create gallery action error:", error)
