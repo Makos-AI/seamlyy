@@ -14,7 +14,31 @@ export default async function DashboardPage() {
     where: { id: session.user.id },
     include: {
       artworks: true,
-      purchases: true,
+      purchases: {
+        include: {
+          artwork: {
+            include: {
+              artist: {
+                select: {
+                  name: true
+                }
+              }
+            }
+          },
+          gallery: {
+            include: {
+              artist: {
+                select: {
+                  name: true
+                }
+              }
+            }
+          }
+        },
+        orderBy: {
+          createdAt: "desc"
+        }
+      },
       sales: {
         include: {
           buyer: true,
@@ -141,13 +165,81 @@ export default async function DashboardPage() {
             </div>
             
             {user.purchases.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {user.purchases.map((purchase) => (
-                  <Card key={purchase.id} className="p-4">
-                     <p className="text-xs text-text-muted">Transaction</p>
-                     <p className="font-bold text-lg text-text-primary mt-1">${Number(purchase.amount).toFixed(2)}</p>
-                  </Card>
-                ))}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {user.purchases.map((purchase) => {
+                  const artwork = purchase.artwork
+                  const gallery = purchase.gallery
+                  
+                  if (artwork) {
+                    return (
+                      <Link key={purchase.id} href={`/artwork/${artwork.id}`}>
+                        <Card className="overflow-hidden group h-full flex flex-col hover:border-gold/30 hover:shadow-xl transition-all duration-300">
+                          <div className="relative aspect-square overflow-hidden bg-bg-tertiary">
+                            <img
+                              src={artwork.thumbnailUrl}
+                              alt={artwork.title}
+                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            />
+                            <div className="absolute top-3 right-3">
+                              <Badge variant="success">Artwork</Badge>
+                            </div>
+                          </div>
+                          <div className="p-4 flex-1 flex flex-col justify-between">
+                            <div>
+                              <h3 className="text-base font-semibold text-text-primary truncate">{artwork.title}</h3>
+                              <p className="text-xs text-text-muted mt-1">by {artwork.artist?.name || "Unknown"}</p>
+                            </div>
+                            <span className="text-xs text-gold font-medium mt-4 group-hover:underline">
+                              View Masterpiece &rarr;
+                            </span>
+                          </div>
+                        </Card>
+                      </Link>
+                    )
+                  }
+
+                  if (gallery) {
+                    return (
+                      <Link key={purchase.id} href={`/gallery/${gallery.id}`}>
+                        <Card className="overflow-hidden group h-full flex flex-col hover:border-gold/30 hover:shadow-xl transition-all duration-300">
+                          <div className="relative aspect-video overflow-hidden bg-bg-tertiary">
+                            <img
+                              src={gallery.coverImageUrl}
+                              alt={gallery.title}
+                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            />
+                            <div className="absolute top-3 right-3">
+                              <Badge variant="info">Gallery Access</Badge>
+                            </div>
+                          </div>
+                          <div className="p-4 flex-1 flex flex-col justify-between">
+                            <div>
+                              <h3 className="text-base font-semibold text-text-primary truncate">{gallery.title}</h3>
+                              <p className="text-xs text-text-muted mt-1">by {gallery.artist?.name || "Unknown"}</p>
+                            </div>
+                            <span className="text-xs text-gold font-medium mt-4 group-hover:underline">
+                              View Exhibition &rarr;
+                            </span>
+                          </div>
+                        </Card>
+                      </Link>
+                    )
+                  }
+
+                  // Fallback to transaction details if relation is missing/deleted
+                  return (
+                    <Card key={purchase.id} className="p-6 flex flex-col justify-between h-full bg-bg-secondary border border-border">
+                      <div>
+                        <p className="text-xs font-semibold text-text-muted uppercase tracking-wider">Transaction Payout</p>
+                        <p className="font-bold text-2xl text-text-primary mt-2">
+                          ${Number(purchase.amount).toFixed(2)} USD
+                        </p>
+                        <p className="text-xs text-text-muted mt-1">Type: {purchase.type.replace(/_/g, ' ')}</p>
+                      </div>
+                      <Badge variant="neutral" className="mt-4 self-start">Completed</Badge>
+                    </Card>
+                  )
+                })}
               </div>
             ) : (
               <Card className="p-12 text-center bg-bg-secondary border-dashed" hoverable={false}>

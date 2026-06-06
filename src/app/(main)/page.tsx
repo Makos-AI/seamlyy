@@ -126,48 +126,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* How it Works Section */}
-      <section className="py-20 px-4 border-t border-border bg-bg-secondary/20">
-        <div className="container mx-auto max-w-6xl">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <Badge variant="premium" className="mb-4">Simple Setup</Badge>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-text-primary mb-4">How Seamlyy Works</h2>
-            <p className="text-text-secondary">The future of seamless art collection powered by Open Payments.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                num: "01",
-                title: "Connect",
-                desc: "Sign up and configure your Web Monetization Wallet Pointer. Artists use this to receive funds instantly, and collectors use it to make seamless purchases."
-              },
-              {
-                num: "02",
-                title: "Discover",
-                desc: "Browse through unique single artworks or curated premium exhibitions. When you find a piece you love, interaction is frictionless."
-              },
-              {
-                num: "03",
-                title: "Unlock & Own",
-                desc: "Authorize a micro-transaction directly from your wallet. Interledger handles the currency conversion and settlement instantly."
-              }
-            ].map((step, idx) => (
-              <Card key={idx} className="p-8 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                  <span className="text-8xl font-black font-heading text-gold">{step.num}</span>
-                </div>
-                <div className="w-10 h-10 rounded-lg bg-gold/10 text-gold flex items-center justify-center font-bold font-heading mb-6">
-                  {step.num}
-                </div>
-                <h3 className="text-xl font-bold text-text-primary mb-4 relative z-10">{step.title}</h3>
-                <p className="text-sm text-text-secondary leading-relaxed relative z-10">{step.desc}</p>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Premium Galleries */}
       <section className="py-20 px-4">
         <div className="container mx-auto max-w-6xl">
@@ -211,6 +169,48 @@ export default async function HomePage() {
                 <p className="text-text-secondary">No premium galleries available yet.</p>
               </div>
             )}
+          </div>
+        </div>
+      </section>
+
+      {/* How it Works Section */}
+      <section className="py-20 px-4 border-t border-border bg-bg-secondary/20">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <Badge variant="premium" className="mb-4">Simple Setup</Badge>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-text-primary mb-4">How Seamlyy Works</h2>
+            <p className="text-text-secondary">The future of seamless art collection powered by Open Payments.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                num: "01",
+                title: "Connect",
+                desc: "Sign up and configure your Web Monetization Wallet Pointer. Artists use this to receive funds instantly, and collectors use it to make seamless purchases."
+              },
+              {
+                num: "02",
+                title: "Discover",
+                desc: "Browse through unique single artworks or curated premium exhibitions. When you find a piece you love, interaction is frictionless."
+              },
+              {
+                num: "03",
+                title: "Unlock & Own",
+                desc: "Authorize a micro-transaction directly from your wallet. Interledger handles the currency conversion and settlement instantly."
+              }
+            ].map((step, idx) => (
+              <Card key={idx} className="p-8 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                  <span className="text-8xl font-black font-heading text-gold">{step.num}</span>
+                </div>
+                <div className="w-10 h-10 rounded-lg bg-gold/10 text-gold flex items-center justify-center font-bold font-heading mb-6">
+                  {step.num}
+                </div>
+                <h3 className="text-xl font-bold text-text-primary mb-4 relative z-10">{step.title}</h3>
+                <p className="text-sm text-text-secondary leading-relaxed relative z-10">{step.desc}</p>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
