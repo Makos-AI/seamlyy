@@ -26,40 +26,34 @@ export default function CreateGalleryPage() {
       return
     }
 
+    if (file.size > 20 * 1024 * 1024) {
+      addToast({ type: 'error', message: 'File size exceeds 20MB limit.' })
+      return
+    }
+
     setLoading(true)
     try {
-      // 1. Get presigned URL
-      const presignedRes = await fetch('/api/upload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          filename: file.name,
-          contentType: file.type,
-          folder: 'covers'
-        })
-      })
-      const { url, key } = await presignedRes.json()
-      if (!url) throw new Error("Failed to get presigned URL")
+      // 1. Upload file via FormData (server processes variants & uploads to storage)
+      const uploadFormData = new FormData()
+      uploadFormData.append("file", file)
+      uploadFormData.append("folder", "covers")
 
-      // 2. Upload file (S3 or mock local route)
-      await fetch(url, {
-        method: 'PUT',
-        headers: { 'Content-Type': file.type },
-        body: file
+      const presignedRes = await fetch("/api/upload", {
+        method: "POST",
+        body: uploadFormData
       })
-
-      // 3. Save to database using server action
-      const isMock = url.startsWith('/api/upload/mock')
-      const coverImageUrl = isMock 
-        ? `/uploads/${key}` 
-        : `https://${process.env.NEXT_PUBLIC_S3_BUCKET_NAME || 'seamlyy-uploads'}.s3.amazonaws.com/${key}`
+      const uploadData = await presignedRes.json()
+      if (!presignedRes.ok || !uploadData.displayUrl) {
+        throw new Error(uploadData.error || "Failed to upload cover image")
+      }
 
       const res = await createGalleryAction({
         title,
         description,
         accessFee: parseFloat(accessFee) || 0,
-        coverImageUrl,
-        coverImageKey: key
+        coverImageUrl: uploadData.displayUrl || uploadData.thumbnailUrl,
+        coverImageKey: uploadData.displayKey || uploadData.thumbnailKey,
+        coverBlurDataURL: uploadData.blurDataURL
       })
 
       if (res.error) throw new Error(res.error)

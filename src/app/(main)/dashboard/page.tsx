@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { Card, Button, Badge } from "@/components/ui"
 import Link from "next/link"
+import { ImageWithFallback } from "@/components/ImageWithFallback"
 
 export const dynamic = "force-dynamic"
 import { WalletStats } from "@/components/dashboard/WalletStats"
@@ -116,7 +117,15 @@ export default async function DashboardPage() {
                 {user.artworks.map((art) => (
                   <Card key={art.id} className="overflow-hidden flex flex-col">
                     <div className="relative aspect-square overflow-hidden bg-bg-tertiary">
-                      <img src={art.thumbnailUrl} alt={art.title} className="w-full h-full object-cover" />
+                      <ImageWithFallback 
+                        src={art.thumbnailUrl} 
+                        alt={art.title} 
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                        placeholder={(art as any).blurDataURL ? "blur" : "empty"}
+                        blurDataURL={(art as any).blurDataURL || undefined}
+                        className="object-cover" 
+                      />
                     </div>
                     <div className="p-4">
                       <h3 className="font-semibold text-text-primary text-sm truncate">{art.title}</h3>
@@ -180,10 +189,14 @@ export default async function DashboardPage() {
                       <Link key={purchase.id} href={`/artwork/${artwork.id}`}>
                         <Card className="overflow-hidden group h-full flex flex-col hover:border-gold/30 hover:shadow-xl transition-all duration-300">
                           <div className="relative aspect-square overflow-hidden bg-bg-tertiary">
-                            <img
+                            <ImageWithFallback
                               src={artwork.thumbnailUrl}
                               alt={artwork.title}
-                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                              fill
+                              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                              placeholder={(artwork as any).blurDataURL ? "blur" : "empty"}
+                              blurDataURL={(artwork as any).blurDataURL || undefined}
+                              className="object-cover transition-transform duration-500 group-hover:scale-105"
                             />
                             <div className="absolute top-3 right-3">
                               <Badge variant="success">Artwork</Badge>
@@ -208,10 +221,14 @@ export default async function DashboardPage() {
                       <Link key={purchase.id} href={`/gallery/${gallery.id}`}>
                         <Card className="overflow-hidden group h-full flex flex-col hover:border-gold/30 hover:shadow-xl transition-all duration-300">
                           <div className="relative aspect-video overflow-hidden bg-bg-tertiary">
-                            <img
+                            <ImageWithFallback
                               src={gallery.coverImageUrl}
                               alt={gallery.title}
-                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                              fill
+                              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                              placeholder={(gallery as any).coverBlurDataURL ? "blur" : "empty"}
+                              blurDataURL={(gallery as any).coverBlurDataURL || undefined}
+                              className="object-cover transition-transform duration-500 group-hover:scale-105"
                             />
                             <div className="absolute top-3 right-3">
                               <Badge variant="info">Gallery Access</Badge>

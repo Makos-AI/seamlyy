@@ -53,6 +53,11 @@ export default function UploadArtworkPage() {
       return
     }
 
+    if (file.size > 20 * 1024 * 1024) {
+      addToast({ type: 'error', message: 'File size exceeds 20MB limit.' })
+      return
+    }
+
     if (openToSale && (!price || parseFloat(price) <= 0)) {
       addToast({ type: 'error', message: 'Please enter a valid price.' })
       return
@@ -66,32 +71,20 @@ export default function UploadArtworkPage() {
     setLoading(true)
 
     try {
-      // 1. Get presigned URL
-      const presignedRes = await fetch('/api/upload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          filename: file.name,
-          contentType: file.type,
-          folder: 'artworks'
-        })
+      // 1. Upload file via FormData (server processes 3 variants & uploads to storage)
+      const uploadFormData = new FormData()
+      uploadFormData.append("file", file)
+      uploadFormData.append("folder", "artworks")
+
+      const presignedRes = await fetch("/api/upload", {
+        method: "POST",
+        body: uploadFormData
       })
       
-      const { url, key } = await presignedRes.json()
-      if (!url) throw new Error("Failed to get presigned URL")
-
-      // 2. Upload file (to S3 or local mock API)
-      await fetch(url, {
-        method: 'PUT',
-        headers: { 'Content-Type': file.type },
-        body: file
-      })
-
-      // 3. Save artwork metadata to DB via Server Action
-      const isMock = url.startsWith('/api/upload/mock')
-      const thumbnailUrl = isMock 
-        ? `/uploads/${key}` 
-        : `https://${process.env.NEXT_PUBLIC_S3_BUCKET_NAME || 'seamlyy-uploads'}.s3.amazonaws.com/${key}`
+      const uploadData = await presignedRes.json()
+      if (!presignedRes.ok || !uploadData.thumbnailUrl) {
+        throw new Error(uploadData.error || "Failed to upload image")
+      }
 
       let status = "NOT_FOR_SALE"
       if (openToSale) {
@@ -107,9 +100,14 @@ export default function UploadArtworkPage() {
         price: openToSale ? parseFloat(price) : null,
         galleryId: addToGallery ? galleryId : null,
         status,
-        thumbnailUrl,
-        thumbnailKey: key,
-        highResKey: key
+        thumbnailUrl: uploadData.thumbnailUrl,
+        thumbnailKey: uploadData.thumbnailKey,
+        displayUrl: uploadData.displayUrl,
+        displayKey: uploadData.displayKey,
+        highResKey: uploadData.highResKey,
+        blurDataURL: uploadData.blurDataURL,
+        masterWidth: uploadData.masterWidth,
+        masterHeight: uploadData.masterHeight
       })
 
       if (res.error) throw new Error(res.error)

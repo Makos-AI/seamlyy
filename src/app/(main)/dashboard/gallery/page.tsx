@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { Card, Button, Input, Badge } from "@/components/ui"
 import Link from "next/link"
+import { ImageWithFallback } from "@/components/ImageWithFallback"
 
 export default async function GalleryManagementPage() {
   const session = await auth()
@@ -77,8 +78,16 @@ export default async function GalleryManagementPage() {
                       <div className="flex items-center gap-4">
                         {/* Drag Handle Icon */}
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-muted opacity-0 group-hover:opacity-100 transition-opacity"><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg>
-                        <div className="w-12 h-12 rounded bg-bg-tertiary overflow-hidden flex-shrink-0">
-                          <img src={art.thumbnailUrl} alt={art.title} className="w-full h-full object-cover" />
+                        <div className="w-12 h-12 rounded bg-bg-tertiary overflow-hidden flex-shrink-0 relative">
+                          <ImageWithFallback 
+                            src={art.thumbnailUrl} 
+                            alt={art.title} 
+                            fill
+                            sizes="48px"
+                            placeholder={art.blurDataURL ? "blur" : "empty"}
+                            blurDataURL={art.blurDataURL || undefined}
+                            className="object-cover" 
+                          />
                         </div>
                         <span className="font-medium">{art.title}</span>
                       </div>

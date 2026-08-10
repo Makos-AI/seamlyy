@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { Card, Badge, Button } from "@/components/ui"
 import { auth } from "@/auth"
 import { formatPrice } from "@/lib/utils"
+import { ImageWithFallback } from "@/components/ImageWithFallback"
 
 import { unstable_cache } from "next/cache"
 
@@ -86,11 +87,13 @@ export default async function HomePage() {
             
             <div className="hidden lg:block">
               <div className="relative">
-                <div className="rounded-2xl overflow-hidden border border-border shadow-2xl shadow-black/30 animate-float">
-                  <img 
+                <div className="rounded-2xl overflow-hidden border border-border shadow-2xl shadow-black/30 animate-float relative w-full h-[420px]">
+                  <ImageWithFallback 
                     src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop" 
                     alt="Ethereal Flow"
-                    className="w-full h-[420px] object-cover"
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    className="object-cover"
                   />
                 </div>
                 <div className="absolute -bottom-4 -left-4 bg-bg-card border border-border rounded-xl p-4 shadow-xl">
@@ -119,10 +122,14 @@ export default async function HomePage() {
                 <Link key={art.id} href={`/artwork/${art.id}`}>
                   <Card className="overflow-hidden group h-full flex flex-col">
                     <div className="relative aspect-[4/5] overflow-hidden bg-bg-tertiary">
-                      <img 
+                      <ImageWithFallback 
                         src={art.thumbnailUrl} 
                         alt={art.title}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                        placeholder={art.blurDataURL ? "blur" : "empty"}
+                        blurDataURL={art.blurDataURL || undefined}
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     </div>
                     <div className="p-4 flex-1 flex flex-col">
@@ -162,10 +169,14 @@ export default async function HomePage() {
                   <Link key={gallery.id} href={`/gallery/${gallery.id}`}>
                     <Card className="overflow-hidden group h-full">
                       <div className="relative aspect-[4/3] overflow-hidden bg-bg-tertiary">
-                        <img 
+                        <ImageWithFallback 
                           src={gallery.coverImageUrl} 
                           alt={gallery.title}
-                          className="w-full h-full object-cover blur-[2px] transition-all duration-500 group-hover:scale-105 group-hover:blur-0"
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                          placeholder={gallery.coverBlurDataURL ? "blur" : "empty"}
+                          blurDataURL={gallery.coverBlurDataURL || undefined}
+                          className="object-cover blur-[2px] transition-all duration-500 group-hover:scale-105 group-hover:blur-0"
                         />
                         <div className="absolute inset-0 bg-bg-primary/40 flex items-center justify-center group-hover:bg-transparent transition-colors">
                           <div className="bg-bg-glass backdrop-blur-md border border-gold/30 px-4 py-2 rounded-full flex items-center gap-2">

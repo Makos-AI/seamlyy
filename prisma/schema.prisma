@@ -69,6 +69,7 @@ model Gallery {
   accessFee       Float
   coverImageUrl   String
   coverImageKey   String
+  coverBlurDataURL String?
 
   artist          User      @relation(fields: [artistId], references: [id], onDelete: Cascade)
   artworks        Artwork[]
@@ -98,7 +99,12 @@ model Artwork {
 
   thumbnailUrl    String
   thumbnailKey    String
+  displayUrl      String?
+  displayKey      String?
   highResKey      String
+  blurDataURL     String?
+  masterWidth     Int?
+  masterHeight    Int?
 
   artist          User          @relation(fields: [artistId], references: [id], onDelete: Cascade)
   gallery         Gallery?      @relation(fields: [galleryId], references: [id], onDelete: SetNull)

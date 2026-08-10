@@ -44,3 +44,7 @@ next-env.d.ts
 
 # Cryptographic Keys
 private.pem
+
+# Local Uploads
+public/uploads/*
+!public/uploads/.gitkeep

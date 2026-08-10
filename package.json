@@ -14,10 +14,9 @@
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",
-    "@aws-sdk/client-s3": "^3.1060.0",
-    "@aws-sdk/s3-request-presigner": "^3.1060.0",
     "@interledger/open-payments": "^7.4.0",
     "@prisma/client": "^5.22.0",
+    "@supabase/supabase-js": "^2.112.2",
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.4.2",
     "next": "16.2.7",

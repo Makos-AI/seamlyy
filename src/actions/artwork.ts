@@ -30,7 +30,12 @@ export async function createArtworkAction(data: {
   status: string
   thumbnailUrl: string
   thumbnailKey: string
+  displayUrl?: string | null
+  displayKey?: string | null
   highResKey: string
+  blurDataURL?: string | null
+  masterWidth?: number | null
+  masterHeight?: number | null
 }) {
   const session = await auth()
   if (!session?.user?.id) {
@@ -49,7 +54,12 @@ export async function createArtworkAction(data: {
         status: data.status,
         thumbnailUrl: data.thumbnailUrl,
         thumbnailKey: data.thumbnailKey,
-        highResKey: data.highResKey
+        displayUrl: data.displayUrl || data.thumbnailUrl,
+        displayKey: data.displayKey || data.thumbnailKey,
+        highResKey: data.highResKey,
+        blurDataURL: data.blurDataURL || null,
+        masterWidth: data.masterWidth || null,
+        masterHeight: data.masterHeight || null
       }
     })
 
@@ -71,6 +81,7 @@ export async function createGalleryAction(data: {
   accessFee: number
   coverImageUrl: string
   coverImageKey: string
+  coverBlurDataURL?: string | null
 }) {
   const session = await auth()
   if (!session?.user?.id) {
@@ -85,7 +96,8 @@ export async function createGalleryAction(data: {
         description: data.description,
         accessFee: data.accessFee,
         coverImageUrl: data.coverImageUrl,
-        coverImageKey: data.coverImageKey
+        coverImageKey: data.coverImageKey,
+        coverBlurDataURL: data.coverBlurDataURL || null
       }
     })
 
@@ -99,5 +111,69 @@ export async function createGalleryAction(data: {
   } catch (error: any) {
     console.error("Create gallery action error:", error)
     return { error: error.message || "Failed to create gallery" }
+  }
+}
+
+export async function getHighResDownloadUrl(artworkId: string) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return { error: "Unauthorized" }
+  }
+
+  try {
+    const artwork = await prisma.artwork.findUnique({
+      where: { id: artworkId },
+      include: { gallery: true }
+    })
+
+    if (!artwork) {
+      return { error: "Artwork not found" }
+    }
+
+    const isArtist = artwork.artistId === session.user.id
+    
+    const purchase = await prisma.transaction.findFirst({
+      where: {
+        buyerId: session.user.id,
+        artworkId: artwork.id,
+        status: 'COMPLETED'
+      }
+    })
+
+    let hasGalleryAccess = false
+    if (artwork.galleryId) {
+      const gAccess = await prisma.galleryAccess.findFirst({
+        where: {
+          viewerId: session.user.id,
+          galleryId: artwork.galleryId
+        }
+      })
+      hasGalleryAccess = !!gAccess
+    }
+
+    if (!isArtist && !purchase && !hasGalleryAccess) {
+      return { error: "Access denied. Purchase or unlock gallery to download master." }
+    }
+
+    const { supabaseAdmin } = await import("@/lib/supabase")
+
+    let downloadUrl = `/uploads/${artwork.highResKey}`
+
+    try {
+      const { data, error } = await supabaseAdmin.storage
+        .from("artworks")
+        .createSignedUrl(artwork.highResKey, 3600)
+
+      if (data?.signedUrl && !error) {
+        downloadUrl = data.signedUrl
+      }
+    } catch (e) {
+      console.warn("Supabase signed URL error, using default URL path:", e)
+    }
+
+    return { success: true, downloadUrl, title: artwork.title }
+  } catch (error: any) {
+    console.error("High res download error:", error)
+    return { error: error.message || "Failed to generate download link" }
   }
 }

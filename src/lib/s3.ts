@@ -18,12 +18,3 @@ export async function getPresignedUploadUrl(key: string, contentType: string) {
 
   return getSignedUrl(s3Client, command, { expiresIn: 60 })
 }
-
-export async function getPresignedDownloadUrl(key: string) {
-  const command = new GetObjectCommand({
-    Bucket: process.env.S3_BUCKET_NAME,
-    Key: key,
-  })
-
-  return getSignedUrl(s3Client, command, { expiresIn: 3600 }) // 60 minutes
-}

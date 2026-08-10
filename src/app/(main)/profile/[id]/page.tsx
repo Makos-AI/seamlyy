@@ -5,6 +5,7 @@ import Link from "next/link"
 import { auth } from "@/auth"
 import { followArtistAction } from "@/actions/user"
 import { formatPrice } from "@/lib/utils"
+import { ImageWithFallback } from "@/components/ImageWithFallback"
 
 export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -88,7 +89,15 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                   <Link key={art.id} href={`/artwork/${art.id}`}>
                     <Card className="overflow-hidden group h-full flex flex-col">
                       <div className="relative aspect-square overflow-hidden bg-bg-tertiary">
-                        <img src={art.thumbnailUrl} alt={art.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                        <ImageWithFallback 
+                          src={art.thumbnailUrl} 
+                          alt={art.title} 
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                          placeholder={(art as any).blurDataURL ? "blur" : "empty"}
+                          blurDataURL={(art as any).blurDataURL || undefined}
+                          className="object-cover transition-transform duration-500 group-hover:scale-110" 
+                        />
                         <div className="absolute top-3 right-3 flex flex-col gap-2">
                           <Badge variant={art.status === 'SOLD' ? 'neutral' : art.status === 'NOT_FOR_SALE' ? 'neutral' : 'info'}>
                             {art.status === 'SOLD' ? 'Sold' : art.status === 'NOT_FOR_SALE' ? 'Not for Sale' : formatPrice(Number(art.price), preferredCurrency)}
@@ -125,7 +134,15 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                         </div>
                       )}
                       <div className="relative aspect-video overflow-hidden bg-bg-tertiary">
-                        <img src={gallery.coverImageUrl} alt={gallery.title} className="w-full h-full object-cover blur-sm transition-transform duration-500 group-hover:scale-105" />
+                        <ImageWithFallback 
+                          src={gallery.coverImageUrl} 
+                          alt={gallery.title} 
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          placeholder={(gallery as any).coverBlurDataURL ? "blur" : "empty"}
+                          blurDataURL={(gallery as any).coverBlurDataURL || undefined}
+                          className="object-cover blur-sm transition-transform duration-500 group-hover:scale-105" 
+                        />
                         <div className="absolute inset-0 bg-bg-primary/20 flex items-center justify-center">
                           <div className="bg-bg-glass backdrop-blur-md border border-border px-4 py-2 rounded-full flex items-center gap-2">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
@@ -155,7 +172,15 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                   <Link key={saved.artwork.id} href={`/artwork/${saved.artwork.id}`}>
                     <Card className="overflow-hidden group h-full flex flex-col">
                       <div className="relative aspect-square overflow-hidden bg-bg-tertiary">
-                        <img src={saved.artwork.thumbnailUrl} alt={saved.artwork.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                        <ImageWithFallback 
+                          src={saved.artwork.thumbnailUrl} 
+                          alt={saved.artwork.title} 
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                          placeholder={(saved.artwork as any).blurDataURL ? "blur" : "empty"}
+                          blurDataURL={(saved.artwork as any).blurDataURL || undefined}
+                          className="object-cover transition-transform duration-500 group-hover:scale-110" 
+                        />
                       </div>
                       <div className="p-4 flex-1 flex flex-col">
                         <h3 className="text-lg font-semibold text-text-primary truncate">{saved.artwork.title}</h3>

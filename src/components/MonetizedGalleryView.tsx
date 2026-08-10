@@ -6,6 +6,7 @@ import Link from "next/link"
 import { CheckoutButton } from "@/components/CheckoutButton"
 import { WebMonetizationMeta } from "./WebMonetizationMeta"
 import { formatPrice } from "@/lib/utils"
+import { ImageWithFallback } from "@/components/ImageWithFallback"
 
 interface MonetizedGalleryViewProps {
   gallery: {
@@ -147,10 +148,14 @@ export function MonetizedGalleryView({
       {/* Hero Section */}
       <div className="relative h-[55vh] min-h-[380px] flex items-end">
         <div className="absolute inset-0 z-0">
-          <img
+          <ImageWithFallback
             src={gallery.coverImageUrl}
             alt={gallery.title}
-            className={`w-full h-full object-cover transition-all duration-1000 ${
+            fill
+            sizes="100vw"
+            placeholder={(gallery as any).coverBlurDataURL ? "blur" : "empty"}
+            blurDataURL={(gallery as any).coverBlurDataURL || undefined}
+            className={`object-cover transition-all duration-1000 ${
               isUnlocked ? "blur-none brightness-50" : "blur-md brightness-40 saturate-70"
             }`}
           />
@@ -207,10 +212,14 @@ export function MonetizedGalleryView({
                 <Link key={art.id} href={`/artwork/${art.id}`}>
                   <Card className="overflow-hidden group h-full flex flex-col border border-border hover:border-gold/30 hover:shadow-xl transition-all duration-300">
                     <div className="relative aspect-square overflow-hidden bg-bg-tertiary">
-                      <img
+                      <ImageWithFallback
                         src={art.thumbnailUrl}
                         alt={art.title}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        placeholder={(art as any).blurDataURL ? "blur" : "empty"}
+                        blurDataURL={(art as any).blurDataURL || undefined}
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     </div>
                     <div className="p-4 flex-1 flex flex-col justify-between">

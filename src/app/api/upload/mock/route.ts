@@ -9,6 +9,11 @@ export async function PUT(req: NextRequest) {
     if (!key) return NextResponse.json({ error: "Missing key" }, { status: 400 })
 
     const buffer = Buffer.from(await req.arrayBuffer())
+
+    // Enforce 20MB limit
+    if (buffer.length > 20 * 1024 * 1024) {
+      return NextResponse.json({ error: "File size exceeds 20MB limit." }, { status: 400 })
+    }
     
     // Save to public/uploads
     const dest = path.join(process.cwd(), "public", "uploads", key)

@@ -5,6 +5,8 @@ import { Badge, Card, Button } from "@/components/ui"
 import { CheckoutButton } from "@/components/CheckoutButton"
 import { WebMonetizationMeta } from "./WebMonetizationMeta"
 import { formatPrice } from "@/lib/utils"
+import { ImageWithFallback } from "@/components/ImageWithFallback"
+import { getHighResDownloadUrl } from "@/actions/artwork"
 
 interface MonetizedArtworkViewProps {
   artwork: {
@@ -37,6 +39,25 @@ export function MonetizedArtworkView({
   const [streamedAmount, setStreamedAmount] = React.useState(0)
   const [assetCode, setAssetCode] = React.useState("")
   const [isSimulated, setIsSimulated] = React.useState(false)
+  const [downloading, setDownloading] = React.useState(false)
+  const [downloadError, setDownloadError] = React.useState("")
+
+  const handleDownloadMaster = async () => {
+    setDownloading(true)
+    setDownloadError("")
+    try {
+      const res = await getHighResDownloadUrl(artwork.id)
+      if (res.error || !res.downloadUrl) {
+        setDownloadError(res.error || "Failed to generate download URL")
+      } else {
+        window.open(res.downloadUrl, "_blank")
+      }
+    } catch (err: any) {
+      setDownloadError(err.message || "Failed to download master file")
+    } finally {
+      setDownloading(false)
+    }
+  }
 
   // A user is unlocked if they have paid access (database check) or active monetization (real or simulated)
   const isUnlocked = hasPaidAccess || monetizationStatus === "streaming" || isSimulated
@@ -143,10 +164,14 @@ export function MonetizedArtworkView({
       <div className="lg:col-span-7">
         <div className="relative aspect-square rounded-3xl overflow-hidden bg-bg-secondary border border-border shadow-2xl flex items-center justify-center">
           {/* Unlocked / Unblurred High-Res Image */}
-          <img
-            src={artwork.thumbnailUrl}
+          <ImageWithFallback
+            src={(artwork as any).displayUrl || artwork.thumbnailUrl}
             alt={artwork.title}
-            className={`w-full h-full object-cover transition-all duration-1000 ${
+            fill
+            sizes="(max-width: 1024px) 100vw, 58vw"
+            placeholder={(artwork as any).blurDataURL ? "blur" : "empty"}
+            blurDataURL={(artwork as any).blurDataURL || undefined}
+            className={`object-cover transition-all duration-1000 ${
               isUnlocked ? "blur-0 scale-100" : "blur-2xl saturate-50 brightness-75 scale-105"
             }`}
           />
@@ -317,6 +342,22 @@ export function MonetizedArtworkView({
                     <span className="text-gold font-semibold">{streamedAmount} {assetCode || "Units"}</span>
                   </div>
                 )}
+
+                <div className="pt-2 border-t border-border/50">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="w-full text-xs font-semibold h-10 border-gold/30 text-gold hover:bg-gold/10"
+                    loading={downloading}
+                    onClick={handleDownloadMaster}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mr-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    Download High-Res Master (60-Min Signed Link)
+                  </Button>
+                  {downloadError && (
+                    <p className="text-[11px] text-error mt-1.5 text-center font-medium">{downloadError}</p>
+                  )}
+                </div>
               </Card>
 
               {/* If accessed via streaming but not owned yet, allow acquiring it */}

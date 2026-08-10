@@ -3,6 +3,7 @@ import Link from "next/link"
 import { Card, Badge } from "@/components/ui"
 import { auth } from "@/auth"
 import { formatPrice } from "@/lib/utils"
+import { ImageWithFallback } from "@/components/ImageWithFallback"
 
 export default async function SearchPage({
   searchParams
@@ -53,10 +54,14 @@ export default async function SearchPage({
             <Link key={art.id} href={`/artwork/${art.id}`}>
               <Card className="overflow-hidden group h-full flex flex-col">
                 <div className="relative aspect-[4/5] overflow-hidden bg-bg-tertiary">
-                  <img 
+                  <ImageWithFallback 
                     src={art.thumbnailUrl} 
                     alt={art.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    placeholder={art.blurDataURL ? "blur" : "empty"}
+                    blurDataURL={art.blurDataURL || undefined}
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   <div className="absolute top-3 left-3">
                     <Badge variant={art.status === 'SOLD' ? 'neutral' : 'gold'}>

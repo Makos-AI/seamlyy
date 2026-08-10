@@ -1,5 +1,6 @@
 import { Button, Badge } from "@/components/ui"
 import Link from "next/link"
+import { ImageWithFallback } from "@/components/ImageWithFallback"
 
 export default function AboutPage() {
   return (
@@ -8,10 +9,12 @@ export default function AboutPage() {
       <section className="relative h-[80vh] min-h-[600px] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-b from-bg-primary/20 via-bg-primary/80 to-bg-primary z-10" />
-          <img 
+          <ImageWithFallback 
             src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop" 
             alt="Cinematic 3D Art Background" 
-            className="w-full h-full object-cover blur-sm opacity-50"
+            fill
+            sizes="100vw"
+            className="object-cover blur-sm opacity-50"
           />
         </div>
         

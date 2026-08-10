@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
-import { getPresignedUploadUrl } from "@/lib/s3"
+import { processUploadedImage } from "@/lib/image-processing"
+import { supabaseAdmin } from "@/lib/supabase"
+import { promises as fs } from "fs"
+import path from "path"
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,36 +12,124 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    const contentTypeHeader = req.headers.get("content-type") || ""
+
+    // Handle FormData direct file upload (Preferred: handles variants & Supabase upload)
+    if (contentTypeHeader.includes("multipart/form-data")) {
+      const formData = await req.formData()
+      const file = formData.get("file") as File | null
+      const folder = (formData.get("folder") as string) || "artworks"
+
+      if (!file) {
+        return NextResponse.json({ error: "No file provided" }, { status: 400 })
+      }
+
+      // Enforce 20MB limit
+      if (file.size > 20 * 1024 * 1024) {
+        return NextResponse.json({ error: "File size exceeds 20MB limit." }, { status: 400 })
+      }
+
+      // MIME validation
+      const allowedMimeTypes = ["image/jpeg", "image/png", "image/webp", "image/avif"]
+      if (!allowedMimeTypes.includes(file.type)) {
+        return NextResponse.json({ error: "Invalid file type. Only JPEG, PNG, WEBP, and AVIF are allowed." }, { status: 400 })
+      }
+
+      const inputBuffer = Buffer.from(await file.arrayBuffer())
+      const extension = file.name.split(".").pop() || "jpg"
+      const baseKey = `${folder}/${session.user.id}/${crypto.randomUUID()}.${extension}`
+
+      // Process image variants using sharp
+      const processed = await processUploadedImage(inputBuffer, baseKey, file.type)
+
+      const bucketName = folder === "covers" ? "covers" : "artworks"
+
+      // Attempt upload to Supabase Storage
+      let thumbUrl = ""
+      let displayUrl = ""
+      let masterUrl = ""
+      let isSupabaseConfigured = false
+
+      try {
+        const { error: thumbErr } = await supabaseAdmin.storage
+          .from(bucketName)
+          .upload(processed.thumbnail.key, processed.thumbnail.buffer, {
+            contentType: processed.thumbnail.contentType,
+            upsert: true,
+          })
+
+        if (!thumbErr) {
+          isSupabaseConfigured = true
+          await supabaseAdmin.storage
+            .from(bucketName)
+            .upload(processed.display.key, processed.display.buffer, {
+              contentType: processed.display.contentType,
+              upsert: true,
+            })
+
+          await supabaseAdmin.storage
+            .from(bucketName)
+            .upload(processed.master.key, processed.master.buffer, {
+              contentType: processed.master.contentType,
+              upsert: true,
+            })
+
+          thumbUrl = supabaseAdmin.storage.from(bucketName).getPublicUrl(processed.thumbnail.key).data.publicUrl
+          displayUrl = supabaseAdmin.storage.from(bucketName).getPublicUrl(processed.display.key).data.publicUrl
+          masterUrl = supabaseAdmin.storage.from(bucketName).getPublicUrl(processed.master.key).data.publicUrl
+        }
+      } catch (sbErr) {
+        console.warn("Supabase Storage upload failed/unconfigured, falling back to local storage:", sbErr)
+      }
+
+      // Local storage fallback if Supabase bucket isn't available yet
+      if (!isSupabaseConfigured || !thumbUrl) {
+        const publicUploadsDir = path.join(process.cwd(), "public", "uploads")
+        await fs.mkdir(path.join(publicUploadsDir, folder, session.user.id), { recursive: true })
+
+        await fs.writeFile(path.join(publicUploadsDir, processed.thumbnail.key), processed.thumbnail.buffer)
+        await fs.writeFile(path.join(publicUploadsDir, processed.display.key), processed.display.buffer)
+        await fs.writeFile(path.join(publicUploadsDir, processed.master.key), processed.master.buffer)
+
+        thumbUrl = `/uploads/${processed.thumbnail.key}`
+        displayUrl = `/uploads/${processed.display.key}`
+        masterUrl = `/uploads/${processed.master.key}`
+      }
+
+      return NextResponse.json({
+        success: true,
+        thumbnailUrl: thumbUrl,
+        thumbnailKey: processed.thumbnail.key,
+        displayUrl: displayUrl,
+        displayKey: processed.display.key,
+        highResKey: processed.master.key,
+        masterUrl: masterUrl,
+        blurDataURL: processed.blurDataURL,
+        masterWidth: processed.master.width,
+        masterHeight: processed.master.height,
+        // Legacy fields for backwards compatibility
+        url: thumbUrl,
+        key: processed.thumbnail.key,
+      })
+    }
+
+    // JSON upload preflight endpoint (legacy fallback)
     const body = await req.json()
-    const { filename, contentType, folder = "uploads" } = body
+    const { filename, contentType, contentLength, folder = "artworks" } = body
 
     if (!filename || !contentType) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
-    const extension = filename.split('.').pop()
+    const extension = filename.split(".").pop() || "jpg"
     const key = `${folder}/${session.user.id}/${crypto.randomUUID()}.${extension}`
 
-    let url = ""
-    const hasRealS3 = process.env.AWS_ACCESS_KEY_ID && 
-                      process.env.AWS_ACCESS_KEY_ID !== "your_access_key_id" &&
-                      process.env.AWS_SECRET_ACCESS_KEY &&
-                      process.env.AWS_SECRET_ACCESS_KEY !== "your_secret_access_key"
-
-    if (hasRealS3) {
-      try {
-        url = await getPresignedUploadUrl(key, contentType)
-      } catch (err) {
-        console.warn("Failed to get S3 presigned URL, falling back to mock upload URL")
-        url = `/api/upload/mock?key=${key}`
-      }
-    } else {
-      url = `/api/upload/mock?key=${key}`
-    }
-
-    return NextResponse.json({ url, key })
-  } catch (error) {
-    console.error("Presigned URL error:", error)
-    return NextResponse.json({ error: "Failed to generate upload URL" }, { status: 500 })
+    return NextResponse.json({
+      url: `/api/upload/mock?key=${key}`,
+      key: key,
+    })
+  } catch (error: any) {
+    console.error("Upload error:", error)
+    return NextResponse.json({ error: error.message || "Failed to process upload" }, { status: 500 })
   }
 }
