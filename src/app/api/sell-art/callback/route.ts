@@ -25,16 +25,34 @@ export async function GET(req: NextRequest) {
       return NextResponse.redirect(new URL('/payment/error', req.url))
     }
 
-    // 2. Read cookie state
+    // 2. Read cookie state (with DB fallback)
     const cookieStore = await cookies()
-    const op_continue_uri = cookieStore.get('op_continue_uri')?.value
-    const op_continue_token = cookieStore.get('op_continue_token')?.value
-    const op_quote_seller_id = cookieStore.get('op_quote_seller_id')?.value
-    const op_quote_platform_id = cookieStore.get('op_quote_platform_id')?.value
-    const op_buyer_wallet = cookieStore.get('op_buyer_wallet')?.value
+    let op_continue_uri = cookieStore.get('op_continue_uri')?.value
+    let op_continue_token = cookieStore.get('op_continue_token')?.value
+    let op_quote_seller_id = cookieStore.get('op_quote_seller_id')?.value
+    let op_quote_platform_id = cookieStore.get('op_quote_platform_id')?.value
+    let op_buyer_wallet = cookieStore.get('op_buyer_wallet')?.value
+
+    // Fallback: if cookies are missing (e.g., secure cookie on HTTP), recover from DB
+    if (!op_continue_uri || !op_continue_token || !op_quote_seller_id || !op_quote_platform_id) {
+      console.warn("Cookies missing — attempting DB fallback recovery from transaction.shippingDetails")
+      if (transaction.shippingDetails && transaction.openPaymentsUrl) {
+        try {
+          const stored = JSON.parse(transaction.shippingDetails)
+          op_continue_uri = op_continue_uri || transaction.openPaymentsUrl || ''
+          op_continue_token = op_continue_token || stored.continueToken || ''
+          op_quote_seller_id = op_quote_seller_id || stored.quoteSellerId || ''
+          op_quote_platform_id = op_quote_platform_id || stored.quotePlatformId || ''
+          op_buyer_wallet = op_buyer_wallet || stored.buyerWallet || ''
+        } catch (parseErr) {
+          console.error("Failed to parse shippingDetails for fallback:", parseErr)
+        }
+      }
+    }
 
     if (!op_continue_uri || !op_continue_token || !op_quote_seller_id || !op_quote_platform_id || !op_buyer_wallet) {
-      console.error("Missing Open Payments transaction cookies")
+      console.error("Missing Open Payments transaction state (cookies AND DB fallback both failed)")
+      console.error("Cookie values:", { op_continue_uri: !!op_continue_uri, op_continue_token: !!op_continue_token, op_quote_seller_id: !!op_quote_seller_id, op_quote_platform_id: !!op_quote_platform_id, op_buyer_wallet: !!op_buyer_wallet })
       return NextResponse.redirect(new URL('/payment/error', req.url))
     }
 

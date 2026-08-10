@@ -1,3 +1,5 @@
+//Used to determine logic for viewing paid galleries, who can do it
+
 import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
 import { auth } from "@/auth"

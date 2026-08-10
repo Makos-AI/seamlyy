@@ -1,3 +1,5 @@
+//Seting up an artwork and putting it in a gallery
+
 "use client"
 
 import * as React from "react"

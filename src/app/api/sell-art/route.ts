@@ -237,6 +237,12 @@ export async function POST(req: NextRequest) {
     // 7. Request GNAP interactive grant from Buyer's Authorization Server
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
     
+    // Combine both quote debit amounts into a single outgoing-payment limit
+    // GNAP does not support duplicate access types — we need ONE entry with the total
+    const sellerDebitValue = BigInt(quoteSeller.debitAmount.value)
+    const platformDebitValue = BigInt(quotePlatform.debitAmount.value)
+    const totalDebitValue = (sellerDebitValue + platformDebitValue).toString()
+
     const grantRequest = await client.grant.request(
       { url: buyerWalletAddress.authServer },
       {
@@ -247,15 +253,11 @@ export async function POST(req: NextRequest) {
               actions: ["create", "read", "list"],
               identifier: buyerWalletAddress.id,
               limits: {
-                debitAmount: quoteSeller.debitAmount
-              } as any
-            },
-            {
-              type: "outgoing-payment",
-              actions: ["create", "read", "list"],
-              identifier: buyerWalletAddress.id,
-              limits: {
-                debitAmount: quotePlatform.debitAmount
+                debitAmount: {
+                  value: totalDebitValue,
+                  assetCode: quoteSeller.debitAmount.assetCode,
+                  assetScale: quoteSeller.debitAmount.assetScale
+                }
               } as any
             }
           ]
@@ -291,18 +293,21 @@ export async function POST(req: NextRequest) {
         shippingDetails: JSON.stringify({
           quoteSellerId: quoteSeller.id,
           quotePlatformId: quotePlatform.id,
-          continueToken: grantRequest.continue?.access_token.value
+          continueToken: grantRequest.continue?.access_token.value,
+          buyerWallet: buyerWalletAddress.id
         })
       }
     })
 
     // 9. Save state to Next.js HTTP-only cookies
+    // NOTE: secure must be false for http://localhost development; set true in production
+    const isProduction = process.env.NODE_ENV === 'production'
     const cookieStore = await cookies()
-    cookieStore.set('op_continue_uri', grantRequest.continue?.uri || '', { httpOnly: true, secure: true, sameSite: 'lax' })
-    cookieStore.set('op_continue_token', grantRequest.continue?.access_token.value || '', { httpOnly: true, secure: true, sameSite: 'lax' })
-    cookieStore.set('op_quote_seller_id', quoteSeller.id, { httpOnly: true, secure: true, sameSite: 'lax' })
-    cookieStore.set('op_quote_platform_id', quotePlatform.id, { httpOnly: true, secure: true, sameSite: 'lax' })
-    cookieStore.set('op_buyer_wallet', buyerWalletAddress.id, { httpOnly: true, secure: true, sameSite: 'lax' })
+    cookieStore.set('op_continue_uri', grantRequest.continue?.uri || '', { httpOnly: true, secure: isProduction, sameSite: 'lax' })
+    cookieStore.set('op_continue_token', grantRequest.continue?.access_token.value || '', { httpOnly: true, secure: isProduction, sameSite: 'lax' })
+    cookieStore.set('op_quote_seller_id', quoteSeller.id, { httpOnly: true, secure: isProduction, sameSite: 'lax' })
+    cookieStore.set('op_quote_platform_id', quotePlatform.id, { httpOnly: true, secure: isProduction, sameSite: 'lax' })
+    cookieStore.set('op_buyer_wallet', buyerWalletAddress.id, { httpOnly: true, secure: isProduction, sameSite: 'lax' })
 
     return NextResponse.json({
       success: true,
