@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
 
       const inputBuffer = Buffer.from(await file.arrayBuffer())
       const extension = file.name.split(".").pop() || "jpg"
-      const baseKey = `${folder}/${session.user.id}/${crypto.randomUUID()}.${extension}`
+      const baseKey = `${session.user.id}/${crypto.randomUUID()}.${extension}`
 
       // Process image variants using sharp
       const processed = await processUploadedImage(inputBuffer, baseKey, file.type)

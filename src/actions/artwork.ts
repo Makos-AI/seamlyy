@@ -43,6 +43,12 @@ export async function createArtworkAction(data: {
   }
 
   try {
+    // Ensure user role is ARTIST so dashboard displays artist portfolio
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { role: "ARTIST" }
+    })
+
     const artwork = await prisma.artwork.create({
       data: {
         artistId: session.user.id,
@@ -89,6 +95,12 @@ export async function createGalleryAction(data: {
   }
 
   try {
+    // Ensure user role is ARTIST so gallery management and portfolio controls show
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { role: "ARTIST" }
+    })
+
     const gallery = await prisma.gallery.create({
       data: {
         artistId: session.user.id,
