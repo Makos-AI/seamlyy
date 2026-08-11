@@ -51,12 +51,32 @@ export async function POST(req: NextRequest) {
       let isSupabaseConfigured = false
 
       try {
-        const { error: thumbErr } = await supabaseAdmin.storage
+        // Check/ensure bucket exists
+        const { data: bData } = await supabaseAdmin.storage.getBucket(bucketName)
+        if (!bData) {
+          await supabaseAdmin.storage.createBucket(bucketName, {
+            public: true,
+            fileSizeLimit: 20971520,
+          })
+        }
+
+        let { error: thumbErr } = await supabaseAdmin.storage
           .from(bucketName)
           .upload(processed.thumbnail.key, processed.thumbnail.buffer, {
             contentType: processed.thumbnail.contentType,
             upsert: true,
           })
+
+        if (thumbErr && (thumbErr.message?.includes("not found") || thumbErr.message?.includes("Bucket"))) {
+          await supabaseAdmin.storage.createBucket(bucketName, { public: true })
+          const retry = await supabaseAdmin.storage
+            .from(bucketName)
+            .upload(processed.thumbnail.key, processed.thumbnail.buffer, {
+              contentType: processed.thumbnail.contentType,
+              upsert: true,
+            })
+          thumbErr = retry.error
+        }
 
         if (!thumbErr) {
           isSupabaseConfigured = true
@@ -77,6 +97,8 @@ export async function POST(req: NextRequest) {
           thumbUrl = supabaseAdmin.storage.from(bucketName).getPublicUrl(processed.thumbnail.key).data.publicUrl
           displayUrl = supabaseAdmin.storage.from(bucketName).getPublicUrl(processed.display.key).data.publicUrl
           masterUrl = supabaseAdmin.storage.from(bucketName).getPublicUrl(processed.master.key).data.publicUrl
+        } else {
+          console.warn("Supabase Storage returned upload error:", thumbErr.message)
         }
       } catch (sbErr) {
         console.warn("Supabase Storage upload failed/unconfigured, falling back to local storage:", sbErr)
