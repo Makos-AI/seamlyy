@@ -25,7 +25,14 @@ model User {
   location        String?
   socialLinks     String?
 
+  // Signature Protection Fields
+  protectionActivated Boolean   @default(false)
+  signatureLocked     Boolean   @default(false)
+  signatureUrl        String?
+  signatureHash       String?
+
   artworks        Artwork[]
+  reports         ArtworkReport[]
   galleries       Gallery[]
   purchases       Transaction[]  @relation("Buyer")
   sales           Transaction[]  @relation("Seller")
@@ -97,6 +104,12 @@ model Artwork {
   status          String        @default("NOT_FOR_SALE")
   price           Float?
 
+  // Inspection & Flagging States
+  inspectionStatus    String    @default("PUBLISHED")
+  hasValidSignature   Boolean   @default(false)
+  hasForeignWatermark Boolean   @default(false)
+  watermarkPayload    String?
+
   thumbnailUrl    String
   thumbnailKey    String
   displayUrl      String?
@@ -110,6 +123,7 @@ model Artwork {
   gallery         Gallery?      @relation(fields: [galleryId], references: [id], onDelete: SetNull)
   transactions    Transaction[]
   savedBy         SavedArtwork[]
+  reports         ArtworkReport[]
 
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
@@ -191,4 +205,21 @@ model Follow {
 
   @@id([followerId, followingId])
   @@map("follows")
+}
+
+model ArtworkReport {
+  id          String   @id @default(uuid())
+  reason      String
+  details     String?
+  artworkId   String
+  reporterId  String
+  
+  artwork     Artwork  @relation(fields: [artworkId], references: [id], onDelete: Cascade)
+  reporter    User     @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+
+  @@index([artworkId])
+  @@index([reporterId])
+  @@map("artwork_reports")
 }

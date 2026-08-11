@@ -4,6 +4,8 @@ import { processUploadedImage } from "@/lib/image-processing"
 import { supabaseAdmin } from "@/lib/supabase"
 import { promises as fs } from "fs"
 import path from "path"
+import { prisma } from "@/lib/prisma"
+import { extractLSBWatermark, embedLSBWatermark, generatePHash, compareHashes } from "@/lib/inspection-engine"
 
 export async function POST(req: NextRequest) {
   try {
@@ -43,8 +45,49 @@ export async function POST(req: NextRequest) {
       const extension = file.name.split(".").pop() || "jpg"
       const baseKey = `${session.user.id}/${crypto.randomUUID()}.${extension}`
 
+      // --- INSPECTION ENGINE ---
+      let inspectionStatus = "PUBLISHED"
+      let watermarkPayload = null
+
+      if (folder === "artworks") {
+        try {
+          const user = await prisma.user.findUnique({ where: { id: session.user.id } })
+          if (user?.protectionActivated) {
+            // Stage 1: Watermark Scan
+            const foreignWatermark = await extractLSBWatermark(inputBuffer)
+            if (foreignWatermark && foreignWatermark !== session.user.id) {
+              inspectionStatus = "FLAGGED_DUPLICATE_WATERMARK"
+              watermarkPayload = foreignWatermark
+            }
+
+            // Stage 2: Signature Scan (if not already flagged)
+            if (inspectionStatus === "PUBLISHED" && user.signatureHash) {
+              const uploadHash = await generatePHash(inputBuffer)
+              const distance = compareHashes(uploadHash, user.signatureHash)
+              console.log(`[INSPECTION] pHash distance: ${distance}`)
+              
+              if (distance > 20) {
+                inspectionStatus = "FLAGGED_INVALID_SIGNATURE"
+              }
+            }
+          }
+        } catch (err) {
+          console.error("[INSPECTION] Error:", err)
+        }
+      }
+      // --------------------------
+
       // Process image variants using sharp
       const processed = await processUploadedImage(inputBuffer, baseKey, file.type)
+
+      // Embed Artist ID Watermark into Master file if protection is active and it's a valid upload
+      if (folder === "artworks" && inspectionStatus === "PUBLISHED") {
+        try {
+          processed.master.buffer = await embedLSBWatermark(processed.master.buffer, session.user.id)
+        } catch(e) {
+          console.log("[INSPECTION] Failed to embed watermark:", e)
+        }
+      }
 
       const bucketName = folder === "covers" ? "covers" : "artworks"
       console.log(`[UPLOAD] Target Supabase bucket: "${bucketName}"`)
@@ -165,12 +208,14 @@ export async function POST(req: NextRequest) {
         blurDataURL: processed.blurDataURL,
         masterWidth: processed.master.width,
         masterHeight: processed.master.height,
+        inspectionStatus,
+        watermarkPayload,
         // Legacy fields for backwards compatibility
         url: thumbUrl,
         key: processed.thumbnail.key,
       }
 
-      console.log(`[UPLOAD] ✅ Upload complete. Returning response with thumbnailUrl="${thumbUrl}"`)
+      console.log(`[UPLOAD] ✅ Upload complete. Status: ${inspectionStatus}. Returning response with thumbnailUrl="${thumbUrl}"`)
 
       return NextResponse.json(response)
     }

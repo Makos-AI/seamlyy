@@ -36,6 +36,8 @@ export async function createArtworkAction(data: {
   blurDataURL?: string | null
   masterWidth?: number | null
   masterHeight?: number | null
+  inspectionStatus?: string
+  watermarkPayload?: string | null
 }) {
   const session = await auth()
   if (!session?.user?.id) {
@@ -72,7 +74,11 @@ export async function createArtworkAction(data: {
         highResKey: data.highResKey,
         blurDataURL: data.blurDataURL || null,
         masterWidth: data.masterWidth || null,
-        masterHeight: data.masterHeight || null
+        masterHeight: data.masterHeight || null,
+        inspectionStatus: data.inspectionStatus || "PUBLISHED",
+        watermarkPayload: data.watermarkPayload || null,
+        hasValidSignature: data.inspectionStatus === "PUBLISHED" ? true : false,
+        hasForeignWatermark: data.inspectionStatus === "FLAGGED_DUPLICATE_WATERMARK" ? true : false
       }
     })
 

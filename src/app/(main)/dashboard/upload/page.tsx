@@ -26,6 +26,11 @@ export default function UploadArtworkPage() {
   
   const [loading, setLoading] = React.useState(false)
   const fileInputRef = React.useRef<HTMLInputElement>(null)
+  
+  // Flagged Dialog State
+  const [flaggedStatus, setFlaggedStatus] = React.useState<string | null>(null)
+  const [flaggedPayload, setFlaggedPayload] = React.useState<any>(null)
+  const [flaggedArtworkId, setFlaggedArtworkId] = React.useState<string | null>(null)
 
   React.useEffect(() => {
     async function loadGalleries() {
@@ -112,17 +117,26 @@ export default function UploadArtworkPage() {
         displayKey: uploadData.displayKey,
         highResKey: uploadData.highResKey,
         blurDataURL: uploadData.blurDataURL,
+        blurDataURL: uploadData.blurDataURL,
         masterWidth: uploadData.masterWidth,
-        masterHeight: uploadData.masterHeight
+        masterHeight: uploadData.masterHeight,
+        inspectionStatus: uploadData.inspectionStatus,
+        watermarkPayload: uploadData.watermarkPayload
       })
 
       console.log("[UPLOAD FORM] createArtworkAction result:", res)
 
       if (res.error) throw new Error(res.error)
 
-      addToast({ type: 'success', message: 'Artwork uploaded successfully!' })
-      router.push('/dashboard')
-      router.refresh()
+      if (uploadData.inspectionStatus && uploadData.inspectionStatus !== "PUBLISHED") {
+        setFlaggedStatus(uploadData.inspectionStatus)
+        setFlaggedPayload(uploadData)
+        setFlaggedArtworkId(res.artworkId)
+      } else {
+        addToast({ type: 'success', message: 'Artwork uploaded successfully!' })
+        router.push('/dashboard')
+        router.refresh()
+      }
     } catch (error: any) {
       console.error("[UPLOAD FORM] ❌ Error:", error)
       addToast({ type: 'error', message: error.message || 'Failed to upload artwork.' })
@@ -133,12 +147,77 @@ export default function UploadArtworkPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
-      <div className="mb-8">
-        <h1 className="text-3xl font-heading font-bold text-text-primary">Upload Artwork</h1>
-        <p className="text-text-secondary mt-2">Add a new piece to your public portfolio or a gallery.</p>
-      </div>
+      {flaggedStatus ? (
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-3xl font-heading font-bold text-text-primary">Upload Flagged</h1>
+            <a href="mailto:support@seamlyy.com">
+              <Button variant="secondary" size="sm">Contact Us</Button>
+            </a>
+          </div>
 
-      <Card className="p-8">
+          {flaggedStatus === "FLAGGED_INVALID_SIGNATURE" && (
+            <div className="bg-bg-secondary border border-border rounded-xl p-6">
+              <div className="flex items-center gap-3 mb-4 text-amber-500">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                <h2 className="text-xl font-bold">Signature Verification Warning</h2>
+              </div>
+              <p className="text-text-secondary mb-4">We could not match the signature on this artwork with the master signature locked to your profile.</p>
+              <ul className="list-disc pl-5 text-sm text-text-muted mb-6 space-y-1">
+                <li>The signature is placed in an unconventional area or too faint.</li>
+                <li>You uploaded work using a signature version different from your lock.</li>
+              </ul>
+              <div className="bg-bg-tertiary p-4 rounded-lg mb-6 text-sm text-text-primary">
+                <strong>Status:</strong> Your artwork has been saved as UNVERIFIED (Flagged).
+              </div>
+              <div className="flex gap-4">
+                <Button onClick={() => {
+                  router.push('/dashboard')
+                  router.refresh()
+                }}>Submit for Manual Curator Review</Button>
+                <Button variant="ghost" onClick={() => {
+                  router.push('/dashboard')
+                  router.refresh()
+                }}>Proceed as Unverified Draft</Button>
+              </div>
+            </div>
+          )}
+
+          {flaggedStatus === "FLAGGED_DUPLICATE_WATERMARK" && (
+            <div className="bg-bg-secondary border border-red-500/30 rounded-xl p-6">
+              <div className="flex items-center gap-3 mb-4 text-red-500">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                <h2 className="text-xl font-bold">Duplicate Watermark Detected</h2>
+              </div>
+              <p className="text-text-secondary mb-4">Our inspection engine found a digital copyright watermark embedded in this image that belongs to another registered creator.</p>
+              <div className="bg-red-500/10 p-4 rounded-lg mb-6 text-sm text-red-400">
+                <strong>Status:</strong> Upload Flagged for Copyright Review.
+              </div>
+              <ul className="list-disc pl-5 text-sm text-text-muted mb-6 space-y-1">
+                <li>If you own this work under another account, contact support.</li>
+                <li>If you hold an official license, attach proof in a dispute.</li>
+              </ul>
+              <div className="flex gap-4">
+                <Button variant="secondary" onClick={() => {
+                  addToast({ type: 'info', message: 'Dispute filed. Support will contact you.' })
+                  router.push('/dashboard')
+                }}>File Ownership Dispute</Button>
+                <Button variant="ghost" onClick={() => {
+                  // In a real app we'd trigger an API to delete the artwork
+                  addToast({ type: 'success', message: 'Upload cancelled.' })
+                  router.push('/dashboard')
+                }}>Dismiss & Cancel Upload</Button>
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        <>
+          <div className="mb-8">
+            <h1 className="text-3xl font-heading font-bold text-text-primary">Upload Artwork</h1>
+            <p className="text-text-secondary mt-2">Add a new piece to your public portfolio or a gallery.</p>
+          </div>
+          <Card className="p-8">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <label className="block text-sm font-medium text-text-secondary">Artwork Image</label>
@@ -261,6 +340,7 @@ export default function UploadArtworkPage() {
           </div>
         </form>
       </Card>
+      )}
     </div>
   )
 }

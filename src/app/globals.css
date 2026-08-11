@@ -141,3 +141,26 @@ header, footer, nav, main, section, article, aside, .card, .glass, button, input
 .animate-shimmer { animation: shimmer 2s infinite linear; background-size: 200% 100%; }
 .animate-glow { animation: glow-pulse 2s infinite ease-in-out; }
 .animate-float { animation: float 3s ease-in-out infinite; }
+
+/* Artwork Protection Defenses */
+.protected-art-viewport {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+@media print {
+  canvas, img.protected-art {
+    display: none !important;
+  }
+  body::before {
+    content: "Content protected by Seamlyy digital copyright standards.";
+    font-size: 24px;
+    color: red;
+    display: block;
+    text-align: center;
+    margin-top: 50px;
+  }
+}

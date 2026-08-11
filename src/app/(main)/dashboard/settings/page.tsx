@@ -18,6 +18,12 @@ export default function SettingsPage() {
   const [bio, setBio] = React.useState("")
   const [preferredCurrency, setPreferredCurrency] = React.useState("USD")
   const [loading, setLoading] = React.useState(false)
+  
+  // Protection states
+  const [protectionActivated, setProtectionActivated] = React.useState(false)
+  const [signatureLocked, setSignatureLocked] = React.useState(false)
+  const [signatureFile, setSignatureFile] = React.useState<File | null>(null)
+  const [lockingSignature, setLockingSignature] = React.useState(false)
 
   React.useEffect(() => {
     async function load() {
@@ -27,6 +33,8 @@ export default function SettingsPage() {
         setWalletPointer(result.user.walletPointer || "")
         setBio(result.user.bio || "")
         setPreferredCurrency(result.user.preferredCurrency || "USD")
+        setProtectionActivated(result.user.protectionActivated || false)
+        setSignatureLocked(result.user.signatureLocked || false)
       }
     }
     load()
@@ -59,7 +67,7 @@ export default function SettingsPage() {
       <h1 className="text-3xl font-bold text-text-primary mb-2">Profile Settings</h1>
       <p className="text-text-secondary mb-8">Manage your account and payment configuration.</p>
       
-      <div className="bg-bg-secondary border border-border rounded-2xl p-8">
+      <div className="bg-bg-secondary border border-border rounded-2xl p-8 mb-8">
         <form onSubmit={handleSave} className="space-y-6">
           <Input 
             label="Display Name" 
@@ -111,6 +119,70 @@ export default function SettingsPage() {
             <Button type="submit" loading={loading}>Save Changes</Button>
           </div>
         </form>
+      </div>
+
+      <div className="bg-bg-secondary border border-border rounded-2xl p-8">
+        <h2 className="text-2xl font-bold text-text-primary mb-2">Artwork Protection</h2>
+        <p className="text-text-secondary mb-6">
+          Activate our Digital Copyright Engine. By registering a master signature, we scan all your future uploads and ensure they match, while embedding an invisible watermark to track your ownership.
+        </p>
+
+        {signatureLocked ? (
+          <div className="bg-bg-tertiary border border-green-500/30 rounded-xl p-6 flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold text-green-500 flex items-center gap-2">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                Protection Active & Locked
+              </h3>
+              <p className="text-sm text-text-secondary mt-1">Your master signature is permanently locked to your account. All uploads are now actively scanned.</p>
+            </div>
+          </div>
+        ) : (
+          <form 
+            onSubmit={async (e) => {
+              e.preventDefault()
+              if (!signatureFile) return addToast({ type: 'error', message: 'Please select a signature image' })
+              setLockingSignature(true)
+              
+              const formData = new FormData()
+              formData.append("signatureFile", signatureFile)
+              
+              // We'll import this dynamically to avoid top-level issues if needed, or import at top
+              const { activateArtworkProtection } = await import("@/actions/protection")
+              const res = await activateArtworkProtection(formData)
+              
+              setLockingSignature(false)
+              if (res.success) {
+                addToast({ type: 'success', message: 'Master signature locked! Protection activated.' })
+                setSignatureLocked(true)
+                setProtectionActivated(true)
+              } else {
+                addToast({ type: 'error', message: res.error || 'Failed to lock signature' })
+              }
+            }} 
+            className="space-y-4"
+          >
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-text-secondary">Upload Master Signature (Clear background preferred)</label>
+              <input 
+                type="file" 
+                accept="image/*"
+                required
+                onChange={(e) => setSignatureFile(e.target.files?.[0] || null)}
+                className="block w-full text-sm text-text-secondary file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gold file:text-bg-primary hover:file:bg-gold/80 cursor-pointer"
+              />
+            </div>
+            
+            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
+              <p className="text-sm text-red-400 font-medium">⚠️ Important: This action is permanent.</p>
+              <p className="text-xs text-text-secondary mt-1">Once you lock this signature, it cannot be changed without contacting support. All future artworks must contain a matching signature to pass automated inspection.</p>
+            </div>
+
+            <Button type="submit" loading={lockingSignature} className="w-full">
+              Lock Master Signature & Activate Protection
+            </Button>
+          </form>
+        )}
       </div>
     </div>
   )

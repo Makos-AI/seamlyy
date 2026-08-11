@@ -6,7 +6,9 @@ import { CheckoutButton } from "@/components/CheckoutButton"
 import { WebMonetizationMeta } from "./WebMonetizationMeta"
 import { formatPrice } from "@/lib/utils"
 import { ImageWithFallback } from "@/components/ImageWithFallback"
+import ProtectedArtCanvas from "@/components/ProtectedArtCanvas"
 import { getHighResDownloadUrl } from "@/actions/artwork"
+import { ReportArtworkModal } from "@/components/ReportArtworkModal"
 
 interface MonetizedArtworkViewProps {
   artwork: {
@@ -41,6 +43,7 @@ export function MonetizedArtworkView({
   const [isSimulated, setIsSimulated] = React.useState(false)
   const [downloading, setDownloading] = React.useState(false)
   const [downloadError, setDownloadError] = React.useState("")
+  const [isReportModalOpen, setIsReportModalOpen] = React.useState(false)
 
   const handleDownloadMaster = async () => {
     setDownloading(true)
@@ -163,15 +166,11 @@ export function MonetizedArtworkView({
       {/* Artwork Display Pane */}
       <div className="lg:col-span-7">
         <div className="relative aspect-square rounded-3xl overflow-hidden bg-bg-secondary border border-border shadow-2xl flex items-center justify-center">
-          {/* Unlocked / Unblurred High-Res Image */}
-          <ImageWithFallback
+          {/* Unlocked / Unblurred High-Res Image - Protected via Canvas */}
+          <ProtectedArtCanvas
             src={(artwork as any).displayUrl || artwork.thumbnailUrl}
             alt={artwork.title}
-            fill
-            sizes="(max-width: 1024px) 100vw, 58vw"
-            placeholder={(artwork as any).blurDataURL ? "blur" : "empty"}
-            blurDataURL={(artwork as any).blurDataURL || undefined}
-            className={`object-cover transition-all duration-1000 ${
+            className={`w-full h-full object-cover transition-all duration-1000 ${
               isUnlocked ? "blur-0 scale-100" : "blur-2xl saturate-50 brightness-75 scale-105"
             }`}
           />
@@ -410,9 +409,28 @@ export function MonetizedArtworkView({
                 <p className="text-text-primary uppercase">{preferredCurrency}</p>
               </div>
             </div>
+
+            <div className="pt-4 border-t border-border/50">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-xs text-text-muted hover:text-red-500 transition-colors"
+                onClick={() => setIsReportModalOpen(true)}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mr-2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
+                Report Artwork
+              </Button>
+            </div>
           </div>
         </div>
       </div>
+
+      {isReportModalOpen && (
+        <ReportArtworkModal 
+          artworkId={artwork.id} 
+          onClose={() => setIsReportModalOpen(false)} 
+        />
+      )}
     </div>
   )
 }
