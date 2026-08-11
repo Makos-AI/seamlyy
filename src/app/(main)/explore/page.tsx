@@ -5,19 +5,7 @@ import { auth } from "@/auth"
 import { formatPrice } from "@/lib/utils"
 import { ImageWithFallback } from "@/components/ImageWithFallback"
 
-import { unstable_cache } from "next/cache"
-
-const getExploreArtworks = unstable_cache(
-  async () => {
-    return await prisma.artwork.findMany({
-      include: { artist: true },
-      orderBy: { createdAt: 'desc' },
-      take: 12
-    })
-  },
-  ["explore-artworks"],
-  { tags: ["artworks"] }
-)
+export const dynamic = "force-dynamic"
 
 export default async function ExplorePage() {
   const session = await auth()
@@ -30,8 +18,13 @@ export default async function ExplorePage() {
     preferredCurrency = dbUser?.preferredCurrency || "USD"
   }
 
-  const artworks = await getExploreArtworks()
+  const artworks = await prisma.artwork.findMany({
+    include: { artist: true },
+    orderBy: { createdAt: 'desc' },
+    take: 24
+  })
 
+  console.log(`[EXPLORE] Loaded ${artworks.length} artworks from database`)
 
   return (
     <div className="container mx-auto max-w-6xl px-4 py-12">
@@ -40,8 +33,6 @@ export default async function ExplorePage() {
         <h1 className="text-3xl font-bold text-text-primary mb-2">Explore Art</h1>
         <p className="text-text-secondary">Browse categories or discover pieces from talented artists worldwide.</p>
       </div>
-
-
 
       {/* All artworks */}
       {artworks.length > 0 ? (

@@ -20,6 +20,8 @@ export async function POST(req: NextRequest) {
       const file = formData.get("file") as File | null
       const folder = (formData.get("folder") as string) || "artworks"
 
+      console.log(`[UPLOAD] Received upload request: folder="${folder}", userId="${session.user.id}"`)
+
       if (!file) {
         return NextResponse.json({ error: "No file provided" }, { status: 400 })
       }
@@ -35,6 +37,8 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Invalid file type. Only JPEG, PNG, WEBP, and AVIF are allowed." }, { status: 400 })
       }
 
+      console.log(`[UPLOAD] File: "${file.name}", size=${file.size}, type="${file.type}"`)
+
       const inputBuffer = Buffer.from(await file.arrayBuffer())
       const extension = file.name.split(".").pop() || "jpg"
       const baseKey = `${session.user.id}/${crypto.randomUUID()}.${extension}`
@@ -43,6 +47,7 @@ export async function POST(req: NextRequest) {
       const processed = await processUploadedImage(inputBuffer, baseKey, file.type)
 
       const bucketName = folder === "covers" ? "covers" : "artworks"
+      console.log(`[UPLOAD] Target Supabase bucket: "${bucketName}"`)
 
       // Attempt upload to Supabase Storage
       let thumbUrl = ""
@@ -52,14 +57,24 @@ export async function POST(req: NextRequest) {
 
       try {
         // Check/ensure bucket exists
-        const { data: bData } = await supabaseAdmin.storage.getBucket(bucketName)
+        const { data: bData, error: bError } = await supabaseAdmin.storage.getBucket(bucketName)
+        console.log(`[UPLOAD] getBucket("${bucketName}"): exists=${!!bData}, error=${bError?.message || 'none'}`)
+        
         if (!bData) {
-          await supabaseAdmin.storage.createBucket(bucketName, {
+          console.log(`[UPLOAD] Creating bucket "${bucketName}"...`)
+          const { error: createErr } = await supabaseAdmin.storage.createBucket(bucketName, {
             public: true,
             fileSizeLimit: 20971520,
           })
+          if (createErr) {
+            console.error(`[UPLOAD] Failed to create bucket: ${createErr.message}`)
+          } else {
+            console.log(`[UPLOAD] Bucket "${bucketName}" created successfully`)
+          }
         }
 
+        // Upload thumbnail
+        console.log(`[UPLOAD] Uploading thumbnail: key="${processed.thumbnail.key}"`)
         let { error: thumbErr } = await supabaseAdmin.storage
           .from(bucketName)
           .upload(processed.thumbnail.key, processed.thumbnail.buffer, {
@@ -68,6 +83,7 @@ export async function POST(req: NextRequest) {
           })
 
         if (thumbErr && (thumbErr.message?.includes("not found") || thumbErr.message?.includes("Bucket"))) {
+          console.log(`[UPLOAD] Bucket not found on upload, retrying after create...`)
           await supabaseAdmin.storage.createBucket(bucketName, { public: true })
           const retry = await supabaseAdmin.storage
             .from(bucketName)
@@ -80,34 +96,53 @@ export async function POST(req: NextRequest) {
 
         if (!thumbErr) {
           isSupabaseConfigured = true
-          await supabaseAdmin.storage
+          console.log(`[UPLOAD] ✅ Thumbnail uploaded to Supabase`)
+
+          // Upload display variant
+          const { error: dispErr } = await supabaseAdmin.storage
             .from(bucketName)
             .upload(processed.display.key, processed.display.buffer, {
               contentType: processed.display.contentType,
               upsert: true,
             })
+          if (dispErr) {
+            console.error(`[UPLOAD] ⚠ Display upload error: ${dispErr.message}`)
+          } else {
+            console.log(`[UPLOAD] ✅ Display uploaded to Supabase`)
+          }
 
-          await supabaseAdmin.storage
+          // Upload master variant
+          const { error: masterErr } = await supabaseAdmin.storage
             .from(bucketName)
             .upload(processed.master.key, processed.master.buffer, {
               contentType: processed.master.contentType,
               upsert: true,
             })
+          if (masterErr) {
+            console.error(`[UPLOAD] ⚠ Master upload error: ${masterErr.message}`)
+          } else {
+            console.log(`[UPLOAD] ✅ Master uploaded to Supabase`)
+          }
 
           thumbUrl = supabaseAdmin.storage.from(bucketName).getPublicUrl(processed.thumbnail.key).data.publicUrl
           displayUrl = supabaseAdmin.storage.from(bucketName).getPublicUrl(processed.display.key).data.publicUrl
           masterUrl = supabaseAdmin.storage.from(bucketName).getPublicUrl(processed.master.key).data.publicUrl
+
+          console.log(`[UPLOAD] ✅ All 3 variants uploaded to "${bucketName}" bucket`)
+          console.log(`[UPLOAD] thumbUrl: ${thumbUrl}`)
+          console.log(`[UPLOAD] displayUrl: ${displayUrl}`)
         } else {
-          console.warn("Supabase Storage returned upload error:", thumbErr.message)
+          console.error(`[UPLOAD] ❌ Supabase thumbnail upload failed: ${thumbErr.message}`)
         }
-      } catch (sbErr) {
-        console.warn("Supabase Storage upload failed/unconfigured, falling back to local storage:", sbErr)
+      } catch (sbErr: any) {
+        console.error(`[UPLOAD] ❌ Supabase Storage error:`, sbErr.message || sbErr)
       }
 
       // Local storage fallback if Supabase bucket isn't available yet
       if (!isSupabaseConfigured || !thumbUrl) {
+        console.log(`[UPLOAD] ⚠ Falling back to local storage (public/uploads/)`)
         const publicUploadsDir = path.join(process.cwd(), "public", "uploads")
-        await fs.mkdir(path.join(publicUploadsDir, folder, session.user.id), { recursive: true })
+        await fs.mkdir(path.join(publicUploadsDir, path.dirname(processed.thumbnail.key)), { recursive: true })
 
         await fs.writeFile(path.join(publicUploadsDir, processed.thumbnail.key), processed.thumbnail.buffer)
         await fs.writeFile(path.join(publicUploadsDir, processed.display.key), processed.display.buffer)
@@ -116,9 +151,10 @@ export async function POST(req: NextRequest) {
         thumbUrl = `/uploads/${processed.thumbnail.key}`
         displayUrl = `/uploads/${processed.display.key}`
         masterUrl = `/uploads/${processed.master.key}`
+        console.log(`[UPLOAD] Local fallback complete: ${thumbUrl}`)
       }
 
-      return NextResponse.json({
+      const response = {
         success: true,
         thumbnailUrl: thumbUrl,
         thumbnailKey: processed.thumbnail.key,
@@ -132,7 +168,11 @@ export async function POST(req: NextRequest) {
         // Legacy fields for backwards compatibility
         url: thumbUrl,
         key: processed.thumbnail.key,
-      })
+      }
+
+      console.log(`[UPLOAD] ✅ Upload complete. Returning response with thumbnailUrl="${thumbUrl}"`)
+
+      return NextResponse.json(response)
     }
 
     // JSON upload preflight endpoint (legacy fallback)
@@ -151,7 +191,7 @@ export async function POST(req: NextRequest) {
       key: key,
     })
   } catch (error: any) {
-    console.error("Upload error:", error)
+    console.error("[UPLOAD] ❌ Fatal upload error:", error)
     return NextResponse.json({ error: error.message || "Failed to process upload" }, { status: 500 })
   }
 }

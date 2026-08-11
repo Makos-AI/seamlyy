@@ -39,8 +39,14 @@ export async function createArtworkAction(data: {
 }) {
   const session = await auth()
   if (!session?.user?.id) {
+    console.error("[ARTWORK ACTION] ❌ No session found — user not authenticated")
     return { error: "Unauthorized" }
   }
+
+  console.log(`[ARTWORK ACTION] Creating artwork "${data.title}" for user ${session.user.id}`)
+  console.log(`[ARTWORK ACTION] thumbnailUrl: ${data.thumbnailUrl}`)
+  console.log(`[ARTWORK ACTION] highResKey: ${data.highResKey}`)
+  console.log(`[ARTWORK ACTION] galleryId: ${data.galleryId || "none (public portfolio)"}`)
 
   try {
     // Ensure user role is ARTIST so dashboard displays artist portfolio
@@ -48,6 +54,7 @@ export async function createArtworkAction(data: {
       where: { id: session.user.id },
       data: { role: "ARTIST" }
     })
+    console.log(`[ARTWORK ACTION] ✅ User role set to ARTIST`)
 
     const artwork = await prisma.artwork.create({
       data: {
@@ -69,15 +76,21 @@ export async function createArtworkAction(data: {
       }
     })
 
+    console.log(`[ARTWORK ACTION] ✅ Artwork created in DB! ID: ${artwork.id}`)
+
     revalidatePath("/dashboard")
     revalidatePath("/explore")
     revalidatePath(`/profile/${session.user.id}`)
     revalidatePath("/")
     revalidateTag("artworks")
+
+    console.log(`[ARTWORK ACTION] ✅ Cache revalidated for dashboard, explore, profile, home`)
+
     return { success: true, artworkId: artwork.id }
   } catch (error: any) {
-    console.error("Create artwork action error:", error)
-    return { error: error.message || "Failed to create artwork" }
+    console.error("[ARTWORK ACTION] ❌ FAILED to create artwork:", error.message || error)
+    console.error("[ARTWORK ACTION] Full error:", error)
+    return { error: `Failed to create artwork: ${error.message || "Database error"}` }
   }
 }
 
@@ -93,6 +106,8 @@ export async function createGalleryAction(data: {
   if (!session?.user?.id) {
     return { error: "Unauthorized" }
   }
+
+  console.log(`[GALLERY ACTION] Creating gallery "${data.title}" for user ${session.user.id}`)
 
   try {
     // Ensure user role is ARTIST so gallery management and portfolio controls show
@@ -113,6 +128,8 @@ export async function createGalleryAction(data: {
       }
     })
 
+    console.log(`[GALLERY ACTION] ✅ Gallery created in DB! ID: ${gallery.id}`)
+
     revalidatePath("/dashboard")
     revalidatePath("/explore")
     revalidatePath(`/profile/${session.user.id}`)
@@ -121,8 +138,8 @@ export async function createGalleryAction(data: {
     revalidateTag("artworks")
     return { success: true, galleryId: gallery.id }
   } catch (error: any) {
-    console.error("Create gallery action error:", error)
-    return { error: error.message || "Failed to create gallery" }
+    console.error("[GALLERY ACTION] ❌ FAILED:", error.message || error)
+    return { error: `Failed to create gallery: ${error.message || "Database error"}` }
   }
 }
 

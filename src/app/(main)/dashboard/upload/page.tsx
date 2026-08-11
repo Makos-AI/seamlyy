@@ -76,12 +76,16 @@ export default function UploadArtworkPage() {
       uploadFormData.append("file", file)
       uploadFormData.append("folder", "artworks")
 
+      console.log("[UPLOAD FORM] Sending file to /api/upload with folder='artworks'...")
+
       const presignedRes = await fetch("/api/upload", {
         method: "POST",
         body: uploadFormData
       })
       
       const uploadData = await presignedRes.json()
+      console.log("[UPLOAD FORM] /api/upload response:", uploadData)
+
       if (!presignedRes.ok || !uploadData.thumbnailUrl) {
         throw new Error(uploadData.error || "Failed to upload image")
       }
@@ -92,6 +96,8 @@ export default function UploadArtworkPage() {
       } else if (addToGallery) {
         status = "PREMIUM_LOCKED"
       }
+
+      console.log("[UPLOAD FORM] Calling createArtworkAction with status:", status)
 
       const res = await createArtworkAction({
         title,
@@ -110,13 +116,15 @@ export default function UploadArtworkPage() {
         masterHeight: uploadData.masterHeight
       })
 
+      console.log("[UPLOAD FORM] createArtworkAction result:", res)
+
       if (res.error) throw new Error(res.error)
 
       addToast({ type: 'success', message: 'Artwork uploaded successfully!' })
       router.push('/dashboard')
       router.refresh()
     } catch (error: any) {
-      console.error(error)
+      console.error("[UPLOAD FORM] ❌ Error:", error)
       addToast({ type: 'error', message: error.message || 'Failed to upload artwork.' })
     } finally {
       setLoading(false)
