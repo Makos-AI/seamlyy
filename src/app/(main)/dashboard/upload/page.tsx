@@ -340,7 +340,7 @@ export default function UploadArtworkPage() {
           </div>
         </form>
       </Card>
-      )}
+
     </div>
   )
 }
