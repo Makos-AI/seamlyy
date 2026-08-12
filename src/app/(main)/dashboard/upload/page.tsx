@@ -211,136 +211,136 @@ export default function UploadArtworkPage() {
             </div>
           )}
         </div>
-      ) : (
+        ) : (
         <>
           <div className="mb-8">
             <h1 className="text-3xl font-heading font-bold text-text-primary">Upload Artwork</h1>
             <p className="text-text-secondary mt-2">Add a new piece to your public portfolio or a gallery.</p>
           </div>
           <Card className="p-8">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-text-secondary">Artwork Image</label>
-            <div 
-              onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-border hover:border-accent transition-colors rounded-xl p-8 text-center bg-bg-secondary cursor-pointer"
-            >
-              <input 
-                type="file" 
-                accept="image/*" 
-                onChange={handleFileChange}
-                className="hidden" 
-                ref={fileInputRef}
-              />
-              <div className="flex flex-col items-center">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-muted mb-4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                <span className="text-text-primary font-medium">{file ? file.name : 'Click to select a file'}</span>
-                <span className="text-sm text-text-secondary mt-1">PNG, JPG, or WEBP (Max 20MB)</span>
-              </div>
-            </div>
-          </div>
-
-          <Input 
-            label="Title" 
-            required 
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-text-secondary">Description</label>
-            <textarea 
-              className="w-full bg-bg-secondary border border-border rounded-xl p-3 text-sm focus:outline-none focus:border-accent transition-colors text-text-primary"
-              rows={4}
-              required
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-text-secondary">Category</label>
-            <select 
-              className="w-full h-10 bg-bg-secondary border border-border rounded-xl px-3 text-sm focus:outline-none focus:border-accent transition-colors text-text-primary"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-            >
-              {Categories.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-          </div>
-
-          {/* Monetization Toggles */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border">
-            <div className="flex items-center justify-between p-4 rounded-xl border border-border bg-bg-secondary/40">
-              <div>
-                <label className="block text-sm font-semibold text-text-primary">Open to Sale</label>
-                <span className="text-xs text-text-muted">Allow collectors to buy this artwork</span>
-              </div>
-              <input 
-                type="checkbox"
-                checked={openToSale}
-                onChange={(e) => setOpenToSale(e.target.checked)}
-                className="w-5 h-5 rounded border-border text-gold focus:ring-gold"
-              />
-            </div>
-
-            <div className="flex items-center justify-between p-4 rounded-xl border border-border bg-bg-secondary/40">
-              <div>
-                <label className="block text-sm font-semibold text-text-primary">Add to Premium Gallery</label>
-                <span className="text-xs text-text-muted">Group this into a premium exhibition</span>
-              </div>
-              <input 
-                type="checkbox"
-                checked={addToGallery}
-                onChange={(e) => setAddToGallery(e.target.checked)}
-                className="w-5 h-5 rounded border-border text-gold focus:ring-gold"
-              />
-            </div>
-          </div>
-
-          {openToSale && (
-            <Input 
-              label="Price (USD)" 
-              type="number" 
-              step="0.01" 
-              min="0"
-              required
-              placeholder="e.g., 150.00"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-            />
-          )}
-
-          {addToGallery && (
-            <div className="space-y-2 p-4 rounded-xl border border-border bg-bg-secondary/20">
-              <label className="block text-sm font-medium text-text-secondary">Select Premium Gallery</label>
-              <div className="flex items-center gap-4">
-                <select 
-                  className="flex-1 h-10 bg-bg-secondary border border-border rounded-xl px-3 text-sm focus:outline-none focus:border-accent transition-colors text-text-primary"
-                  value={galleryId}
-                  onChange={(e) => setGalleryId(e.target.value)}
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-text-secondary">Artwork Image</label>
+                <div 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="border-2 border-dashed border-border hover:border-accent transition-colors rounded-xl p-8 text-center bg-bg-secondary cursor-pointer"
                 >
-                  {galleries.map(g => (
-                    <option key={g.id} value={g.id}>{g.title}</option>
-                  ))}
-                  {galleries.length === 0 && (
-                    <option value="" disabled>No galleries available</option>
-                  )}
-                </select>
-                <Link href="/dashboard/gallery/new">
-                  <Button type="button" variant="secondary" size="sm">Create New Gallery</Button>
-                </Link>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleFileChange}
+                    className="hidden" 
+                    ref={fileInputRef}
+                  />
+                  <div className="flex flex-col items-center">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-muted mb-4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    <span className="text-text-primary font-medium">{file ? file.name : 'Click to select a file'}</span>
+                    <span className="text-sm text-text-secondary mt-1">PNG, JPG, or WEBP (Max 20MB)</span>
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
 
-          <div className="pt-4 flex justify-end gap-4">
-            <Button type="button" variant="ghost" onClick={() => router.back()}>Cancel</Button>
-            <Button type="submit" loading={loading}>Upload</Button>
-          </div>
-        </form>
+              <Input 
+                label="Title" 
+                required 
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-text-secondary">Description</label>
+                <textarea 
+                  className="w-full bg-bg-secondary border border-border rounded-xl p-3 text-sm focus:outline-none focus:border-accent transition-colors text-text-primary"
+                  rows={4}
+                  required
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-text-secondary">Category</label>
+                <select 
+                  className="w-full h-10 bg-bg-secondary border border-border rounded-xl px-3 text-sm focus:outline-none focus:border-accent transition-colors text-text-primary"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                >
+                  {Categories.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+
+              {/* Monetization Toggles */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border">
+                <div className="flex items-center justify-between p-4 rounded-xl border border-border bg-bg-secondary/40">
+                  <div>
+                    <label className="block text-sm font-semibold text-text-primary">Open to Sale</label>
+                    <span className="text-xs text-text-muted">Allow collectors to buy this artwork</span>
+                  </div>
+                  <input 
+                    type="checkbox"
+                    checked={openToSale}
+                    onChange={(e) => setOpenToSale(e.target.checked)}
+                    className="w-5 h-5 rounded border-border text-gold focus:ring-gold"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between p-4 rounded-xl border border-border bg-bg-secondary/40">
+                  <div>
+                    <label className="block text-sm font-semibold text-text-primary">Add to Premium Gallery</label>
+                    <span className="text-xs text-text-muted">Group this into a premium exhibition</span>
+                  </div>
+                  <input 
+                    type="checkbox"
+                    checked={addToGallery}
+                    onChange={(e) => setAddToGallery(e.target.checked)}
+                    className="w-5 h-5 rounded border-border text-gold focus:ring-gold"
+                  />
+                </div>
+              </div>
+
+              {openToSale && (
+                <Input 
+                  label="Price (USD)" 
+                  type="number" 
+                  step="0.01" 
+                  min="0"
+                  required
+                  placeholder="e.g., 150.00"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                />
+              )}
+
+              {addToGallery && (
+                <div className="space-y-2 p-4 rounded-xl border border-border bg-bg-secondary/20">
+                  <label className="block text-sm font-medium text-text-secondary">Select Premium Gallery</label>
+                  <div className="flex items-center gap-4">
+                    <select 
+                      className="flex-1 h-10 bg-bg-secondary border border-border rounded-xl px-3 text-sm focus:outline-none focus:border-accent transition-colors text-text-primary"
+                      value={galleryId}
+                      onChange={(e) => setGalleryId(e.target.value)}
+                    >
+                      {galleries.map(g => (
+                        <option key={g.id} value={g.id}>{g.title}</option>
+                      ))}
+                      {galleries.length === 0 && (
+                        <option value="" disabled>No galleries available</option>
+                      )}
+                    </select>
+                    <Link href="/dashboard/gallery/new">
+                      <Button type="button" variant="secondary" size="sm">Create New Gallery</Button>
+                    </Link>
+                  </div>
+                </div>
+              )}
+
+              <div className="pt-4 flex justify-end gap-4">
+                <Button type="button" variant="ghost" onClick={() => router.back()}>Cancel</Button>
+                <Button type="submit" loading={loading}>Upload</Button>
+              </div>
+            </form>
       </Card>
-
+   )} 
     </div>
   )
 }
