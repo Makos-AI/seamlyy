@@ -211,7 +211,8 @@ export default function UploadArtworkPage() {
             </div>
           )}
         </div>
-        ) : (
+        ) : 
+        (
         <>
           <div className="mb-8">
             <h1 className="text-3xl font-heading font-bold text-text-primary">Upload Artwork</h1>
@@ -340,7 +341,8 @@ export default function UploadArtworkPage() {
               </div>
             </form>
       </Card>
-   )} 
-    </div>
+    )
+    } 
+  </div>
   )
 }
