@@ -44,7 +44,7 @@ export default function LandingPage() {
   const [gateOpen, setGateOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  // Gate background & text rotation
+  // Gate text rotation — only the italic words change
   useEffect(() => {
     if (gateOpen) return;
     const interval = setInterval(() => {
@@ -61,7 +61,6 @@ export default function LandingPage() {
           if (entry.isIntersecting) {
             const el = entry.target as HTMLElement;
             el.classList.add('animate--visible');
-            // Add specific visible modifiers
             if (el.classList.contains('spark__line')) el.classList.add('spark__line--visible');
             if (el.classList.contains('weight__line')) el.classList.add('weight__line--visible');
             observer.unobserve(el);
@@ -76,7 +75,6 @@ export default function LandingPage() {
 
   useEffect(() => {
     if (!gateOpen) return;
-    // Small delay so exhibition is rendered before observing
     const timer = setTimeout(setupObserver, 100);
     return () => clearTimeout(timer);
   }, [gateOpen, setupObserver]);
@@ -86,18 +84,20 @@ export default function LandingPage() {
     window.scrollTo({ top: 0 });
   };
 
+  const slide = GATE_SLIDES[currentSlide];
+
   return (
     <div className="landing-root">
       {/* =============================================
-          LAYER 1: THE GATE 
+          LAYER 1: THE GATE
           ============================================= */}
       <div className={`gate ${gateOpen ? 'gate--hidden' : ''}`}>
-        {/* Rotating backgrounds */}
+        {/* Static background — no movement */}
         <div className="gate__bg">
-          {GATE_SLIDES.map((slide, i) => (
+          {GATE_SLIDES.map((s, i) => (
             <img
               key={i}
-              src={slide.image}
+              src={s.image}
               alt=""
               className={`gate__bg-img ${i === currentSlide ? 'gate__bg-img--active' : ''}`}
             />
@@ -106,18 +106,23 @@ export default function LandingPage() {
         <div className="gate__overlay" />
         <div className="gate__grain" />
 
-        {/* Manifesto */}
+        {/* Two-line manifesto — only italic words rotate */}
         <div className="gate__content">
-          <div className="gate__manifesto-wrap">
-            {GATE_SLIDES.map((slide, i) => (
-              <h1
-                key={i}
-                className={`gate__manifesto ${i === currentSlide ? 'gate__manifesto--active' : ''}`}
-              >
-                You can <em className="gate__word--italic">{slide.action}</em>?{' '}
-                We <em className="gate__word--italic">{slide.verb}</em> you.
-              </h1>
-            ))}
+          <div className="gate__manifesto">
+            <div className="gate__line1">
+              You{' '}
+              <span className="gate__rotating-word" key={`action-${currentSlide}`}>
+                <em className="gate__word--italic">{slide.action}</em>
+              </span>
+              ?
+            </div>
+            <div className="gate__line2">
+              We{' '}
+              <span className="gate__rotating-word" key={`verb-${currentSlide}`}>
+                <em className="gate__word--italic">{slide.verb}</em>
+              </span>
+              {' '}you.
+            </div>
           </div>
 
           <div className="gate__invite">
@@ -136,14 +141,15 @@ export default function LandingPage() {
 
         {/* --- SECTION 1: THE SPARK --- */}
         <section className="section section--spark">
-          <div
-            className="spark__visual"
-            style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=1920&q=80)' }}
+          <img
+            src="https://images.unsplash.com/photo-1547891654-e66ed7ebb968?w=1920&q=80"
+            alt=""
+            className="section__art"
           />
+          <div className="section__overlay" />
           <div className="section__inner">
             <h2 className="section__title" data-animate>
-              It starts with a feeling.
-              <span className="section__title-echo">feeling.</span>
+              It starts with a <em className="section__title-word">feelingg</em>
             </h2>
             <div className="spark__text">
               <p className="spark__line" data-animate>A color you saw on the way home.</p>
@@ -159,10 +165,15 @@ export default function LandingPage() {
 
         {/* --- SECTION 2: THE PROCESS --- */}
         <section className="section section--process">
+          <img
+            src="https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?w=1920&q=80"
+            alt=""
+            className="section__art"
+          />
+          <div className="section__overlay" />
           <div className="section__inner">
             <h2 className="section__title" data-animate>
-              Made by hand.
-              <span className="section__title-echo">hand.</span>
+              Made by <em className="section__title-word">handd</em>
             </h2>
             <div className="process__timeline">
               {STAGE_CARDS.map((card, i) => (
@@ -184,12 +195,17 @@ export default function LandingPage() {
 
         {/* --- SECTION 3: THE WEIGHT --- */}
         <section className="section section--weight">
-          <div className="section__inner section__inner--split">
+          <img
+            src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=1920&q=80"
+            alt=""
+            className="section__art"
+          />
+          <div className="section__overlay section__overlay--heavy" />
+          <div className="section__inner">
+            <h2 className="section__title" data-animate>
+              What it means to be an <em className="section__title-word">artistt</em>
+            </h2>
             <div className="weight__lines">
-              <h2 className="section__title" data-animate>
-                What it means to be an artist.
-                <span className="section__title-echo">artist.</span>
-              </h2>
               <p className="weight__line" data-animate>The hours no one sees.</p>
               <p className="weight__line" data-animate>The versions no one knows about.</p>
               <p className="weight__line" data-animate>The work that pays in meaning before it pays in money.</p>
@@ -197,23 +213,20 @@ export default function LandingPage() {
               <p className="weight__line" data-animate>Because you couldn&apos;t not.</p>
               <p className="weight__line" data-animate>The world needs what you make. Even when it forgets to say so.</p>
             </div>
-            <div className="weight__portrait-wrap" data-animate>
-              <img
-                src="https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?w=800&q=80"
-                alt="Artist at work"
-                className="weight__portrait"
-                loading="lazy"
-              />
-            </div>
           </div>
         </section>
 
         {/* --- SECTION 4: YOUR DAILY COMPANION --- */}
         <section className="section section--companion">
+          <img
+            src="https://images.unsplash.com/photo-1549490349-8643362247b5?w=1920&q=80"
+            alt=""
+            className="section__art"
+          />
+          <div className="section__overlay" />
           <div className="section__inner">
             <h2 className="section__title" data-animate>
-              Part of your day.
-              <span className="section__title-echo">day.</span>
+              Part of your <em className="section__title-word">dayy</em>
             </h2>
             <p className="companion__text" data-animate>
               You&apos;ve done the hardest part. You made the art.<br />
@@ -231,10 +244,15 @@ export default function LandingPage() {
 
         {/* --- SECTION 5: THREE SHIELDS --- */}
         <section className="section section--shields">
+          <img
+            src="https://images.unsplash.com/photo-1578926375605-eaf7559b1458?w=1920&q=80"
+            alt=""
+            className="section__art"
+          />
+          <div className="section__overlay section__overlay--heavy" />
           <div className="section__inner">
             <h2 className="section__title" data-animate>
-              Protected by design.
-              <span className="section__title-echo">design.</span>
+              Protected by <em className="section__title-word">designn</em>
             </h2>
             <div className="shields__stack">
               <div className="shield" data-animate>
@@ -264,10 +282,15 @@ export default function LandingPage() {
 
         {/* --- SECTION 6: THE GALLERIES --- */}
         <section className="section section--galleries">
+          <img
+            src="https://images.unsplash.com/photo-1582582621959-48d27397dc69?w=1920&q=80"
+            alt=""
+            className="section__art"
+          />
+          <div className="section__overlay" />
           <div className="section__inner">
             <h2 className="section__title" data-animate>
-              Your own exhibition.
-              <span className="section__title-echo">exhibition.</span>
+              Your own <em className="section__title-word">exhibitionn</em>
             </h2>
             <p className="companion__text" data-animate>
               Curate your own exhibition. Set your own price. Open the doors whenever you&apos;re ready.
@@ -292,71 +315,66 @@ export default function LandingPage() {
 
         {/* --- SECTION 7: DAVID CARSON --- */}
         <section className="section section--carson">
+          <img
+            src="/carson-art.jpg"
+            alt=""
+            className="section__art carson__art-bg"
+          />
           <div className="carson__noise" />
-          {/* Gold stripe cutting across */}
-          <div className="carson__stripe" style={{ top: '25%', left: '-5%' }} />
-          <div className="carson__stripe carson__stripe--blue" style={{ top: '65%', left: '-5%' }} />
 
           {/* Text fragments — deliberately chaotic */}
           <span className="carson__fragment carson__fragment--serif carson__fragment--bold" style={{ top: '8%', left: '5%', fontSize: 'clamp(5rem, 12vw, 10rem)', color: '#fff' }}>
             ART
           </span>
-          <span className="carson__fragment carson__fragment--sans" style={{ top: '20%', right: '10%', fontSize: '1.2rem', transform: 'rotate(-3deg)', opacity: 0.7 }}>
+          <span className="carson__fragment carson__fragment--sans" style={{ top: '22%', right: '8%', fontSize: '1.2rem', transform: 'rotate(-3deg)', opacity: 0.7 }}>
             doesn&apos;t follow rules
           </span>
-          <span className="carson__fragment carson__fragment--sans carson__fragment--bold" style={{ top: '35%', left: '30%', fontSize: 'clamp(2rem, 5vw, 4rem)', letterSpacing: '0.1em' }}>
+          <span className="carson__fragment carson__fragment--sans carson__fragment--bold" style={{ top: '38%', left: '25%', fontSize: 'clamp(2rem, 5vw, 4rem)', letterSpacing: '0.1em' }}>
             NEITHER
           </span>
-          <span className="carson__fragment carson__fragment--serif carson__fragment--italic carson__fragment--light" style={{ top: '38%', right: '15%', fontSize: 'clamp(1.5rem, 3vw, 2.5rem)' }}>
+          <span className="carson__fragment carson__fragment--serif carson__fragment--italic carson__fragment--light" style={{ top: '42%', right: '12%', fontSize: 'clamp(1.5rem, 3vw, 2.5rem)' }}>
             do we.
           </span>
-          <span className="carson__fragment carson__fragment--sans carson__fragment--bold" style={{ top: '10%', right: '5%', fontSize: 'clamp(8rem, 20vw, 16rem)', opacity: 0.04, lineHeight: 1 }}>
+          <span className="carson__fragment carson__fragment--sans carson__fragment--bold" style={{ top: '5%', right: '5%', fontSize: 'clamp(8rem, 20vw, 16rem)', opacity: 0.06, lineHeight: 1 }}>
             CREATE
           </span>
           <span className="carson__fragment carson__fragment--sans" style={{ bottom: '30%', left: '8%', fontSize: '1.5rem', transform: 'rotate(90deg)', transformOrigin: 'left bottom' }}>
             break
           </span>
-          <span className="carson__fragment carson__fragment--sans carson__fragment--bold" style={{ bottom: '20%', right: '20%', fontSize: '2rem', textDecoration: 'underline', textDecorationColor: '#D9A441' }}>
+          <span className="carson__fragment carson__fragment--sans carson__fragment--bold" style={{ bottom: '18%', right: '18%', fontSize: '2rem', textDecoration: 'underline', textDecorationColor: '#D9A441' }}>
             EVERY
           </span>
-          <span className="carson__fragment carson__fragment--serif carson__fragment--italic" style={{ bottom: '12%', left: '25%', fontSize: 'clamp(2.5rem, 6vw, 5rem)', color: 'rgba(255,255,255,0.6)' }}>
+          <span className="carson__fragment carson__fragment--serif carson__fragment--italic" style={{ bottom: '10%', left: '20%', fontSize: 'clamp(2.5rem, 6vw, 5rem)', color: 'rgba(255,255,255,0.5)' }}>
             boundary
           </span>
 
-          {/* Quotes scattered */}
-          <p className="carson__quote" style={{ top: '50%', left: '5%', fontSize: 'clamp(0.9rem, 2vw, 1.3rem)', maxWidth: '35%', transform: 'rotate(-2deg)', opacity: 0.6 }}>
+          {/* Quotes */}
+          <p className="carson__quote" style={{ top: '55%', left: '5%', maxWidth: '35%', transform: 'rotate(-2deg)' }}>
             &ldquo;Every child is an artist. The problem is how to remain an artist once we grow up.&rdquo;
             <span className="carson__quote-author">— Picasso</span>
           </p>
-          <p className="carson__quote" style={{ top: '15%', right: '3%', fontSize: 'clamp(0.85rem, 1.8vw, 1.1rem)', maxWidth: '30%', transform: 'rotate(4deg)', opacity: 0.5 }}>
+          <p className="carson__quote" style={{ top: '15%', right: '3%', maxWidth: '30%', transform: 'rotate(4deg)', opacity: 0.5 }}>
             &ldquo;I don&apos;t paint dreams or nightmares, I paint my own reality.&rdquo;
             <span className="carson__quote-author">— Frida Kahlo</span>
           </p>
-          <p className="carson__quote" style={{ bottom: '8%', right: '10%', fontSize: 'clamp(0.8rem, 1.5vw, 1rem)', maxWidth: '28%', transform: 'rotate(-5deg)', opacity: 0.4 }}>
+          <p className="carson__quote" style={{ bottom: '5%', right: '8%', maxWidth: '28%', transform: 'rotate(-5deg)', opacity: 0.4 }}>
             &ldquo;Art is not what you see, but what you make others see.&rdquo;
             <span className="carson__quote-author">— Edgar Degas</span>
           </p>
 
-          {/* Images scattered and overlapping */}
+          {/* Scattered images */}
           <img
             src="https://images.unsplash.com/photo-1578926375605-eaf7559b1458?w=400&q=80"
             alt=""
             className="carson__image"
-            style={{ top: '40%', left: '55%', width: '25%', transform: 'rotate(5deg)' }}
+            style={{ top: '35%', left: '55%', width: '22%', transform: 'rotate(5deg)' }}
             loading="lazy"
           />
           <img
             src="https://images.unsplash.com/photo-1582582621959-48d27397dc69?w=400&q=80"
             alt=""
             className="carson__image carson__torn"
-            style={{ top: '55%', left: '10%', width: '22%', transform: 'rotate(-8deg)', filter: 'grayscale(100%)' }}
-            loading="lazy"
-          />
-          <img
-            src="https://images.unsplash.com/photo-1547891654-e66ed7ebb968?w=400&q=80"
-            alt=""
-            className="carson__image"
-            style={{ top: '5%', left: '45%', width: '18%', transform: 'rotate(12deg)' }}
+            style={{ top: '60%', left: '12%', width: '20%', transform: 'rotate(-8deg)', filter: 'grayscale(100%)' }}
             loading="lazy"
           />
         </section>
