@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+export const dynamic = "force-dynamic"
 import { auth } from "@/auth"
 import { processUploadedImage } from "@/lib/image-processing"
 import { supabaseAdmin } from "@/lib/supabase"

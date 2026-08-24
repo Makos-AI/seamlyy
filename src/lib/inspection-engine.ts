@@ -1,5 +1,4 @@
 import imghash from 'imghash'
-import leven from 'fast-levenshtein'
 import sharp from 'sharp'
 
 // 1. pHash Functions

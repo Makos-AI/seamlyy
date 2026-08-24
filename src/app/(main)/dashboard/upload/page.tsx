@@ -130,7 +130,7 @@ export default function UploadArtworkPage() {
       if (uploadData.inspectionStatus && uploadData.inspectionStatus !== "PUBLISHED") {
         setFlaggedStatus(uploadData.inspectionStatus)
         setFlaggedPayload(uploadData)
-        setFlaggedArtworkId(res.artworkId)
+        setFlaggedArtworkId(res.artworkId || null)
       } else {
         addToast({ type: 'success', message: 'Artwork uploaded successfully!' })
         router.push('/dashboard')

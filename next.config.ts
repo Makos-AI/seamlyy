@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["@interledger/open-payments"],
+  serverExternalPackages: ["@interledger/open-payments", "imghash", "sharp"],
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [
