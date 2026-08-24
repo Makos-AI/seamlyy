@@ -365,13 +365,7 @@ export default function LandingPage() {
 
           {/* Scattered images */}
  
-          <img
-            src="https://images.unsplash.com/photo-1582582621959-48d27397dc69?w=400&q=80"
-            alt=""
-            className="carson__image carson__torn"
-            style={{ top: '60%', left: '12%', width: '20%', transform: 'rotate(-8deg)', filter: 'grayscale(100%)' }}
-            loading="lazy"
-          />
+ 
         </section>
 
         {/* --- SECTION 8: THE CLOSE --- */}
