@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { z } from "zod"
-import { signIn } from "@/auth"
+import { signIn, auth } from "@/auth"
 import { UserRole } from "@/types"
 import { AuthError } from "next-auth"
 
@@ -97,5 +97,25 @@ export async function signInWithGoogle(callbackUrl?: string) {
   }
 }
 
+export async function completeOnboarding(data: { role: string; name: string; bio: string }) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return { error: "Unauthorized" }
+  }
 
+  try {
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: {
+        role: data.role,
+        name: data.name,
+        bio: data.bio
+      }
+    })
 
+    return { success: true }
+  } catch (error: any) {
+    console.error("[ONBOARDING] ❌ Error:", error.message || error)
+    return { error: "Failed to update profile" }
+  }
+}

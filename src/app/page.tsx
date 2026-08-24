@@ -2,22 +2,22 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import './landing.css';
+import './landing/landing.css';
 
 const GATE_SLIDES = [
   {
     image: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=1920&q=80',
-    action: 'draw?',
+    action: 'draw',
     verb: 'get',
   },
   {
     image: 'https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?w=1920&q=80',
-    action: 'paint?',
+    action: 'paint',
     verb: 'feel',
   },
   {
     image: 'https://images.unsplash.com/photo-1544967082-d9d25d867d66?w=1920&q=80',
-    action: 'sculpt?',
+    action: 'sculpt',
     verb: 'see',
   },
 ];
@@ -114,7 +114,7 @@ export default function LandingPage() {
               <span className="gate__rotating-word" key={`action-${currentSlide}`}>
                 <em className="gate__word--italic">{slide.action}</em>
               </span>
-               
+              ?
             </div>
             <div className="gate__line2">
               We{' '}
@@ -385,7 +385,7 @@ export default function LandingPage() {
           <div className="close__inner" data-animate>
             <h2 className="close__brand">Seamlyy</h2>
             <p className="close__message">You've put in the hard work. Let us handle the rest</p>
-            <Link href="/" className="close__btn">
+            <Link href="/home" className="close__btn">
               Get <em>Seamlyy</em>
             </Link>
           </div>

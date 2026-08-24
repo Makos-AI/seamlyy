@@ -57,6 +57,11 @@ export default async function DashboardPage() {
 
   if (!user) redirect('/login')
 
+  // Redirect to onboarding if they signed up via Google and haven't set up their profile yet
+  if (!user.hashedPassword && user.role === 'VIEWER' && !user.bio) {
+    redirect('/onboarding')
+  }
+
   const totalSales = user.sales
     .filter(s => s.type !== "PAY_TO_VIEW" && s.status === "COMPLETED")
     .reduce((acc, sale) => acc + Number(sale.amount), 0)

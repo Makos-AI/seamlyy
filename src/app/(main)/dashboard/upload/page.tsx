@@ -25,12 +25,31 @@ export default function UploadArtworkPage() {
   const [galleries, setGalleries] = React.useState<any[]>([])
   
   const [loading, setLoading] = React.useState(false)
+  const [profileLoading, setProfileLoading] = React.useState(true)
+  const [protectionActivated, setProtectionActivated] = React.useState(false)
   const fileInputRef = React.useRef<HTMLInputElement>(null)
   
   // Flagged Dialog State
   const [flaggedStatus, setFlaggedStatus] = React.useState<string | null>(null)
   const [flaggedPayload, setFlaggedPayload] = React.useState<any>(null)
   const [flaggedArtworkId, setFlaggedArtworkId] = React.useState<string | null>(null)
+
+  React.useEffect(() => {
+    async function checkProtection() {
+      try {
+        const { getProfile } = await import("@/actions/user")
+        const res = await getProfile()
+        if (res.success && res.user) {
+          setProtectionActivated(res.user.protectionActivated || false)
+        }
+      } catch (err) {
+        console.error("Failed to check protection settings:", err)
+      } finally {
+        setProfileLoading(false)
+      }
+    }
+    checkProtection()
+  }, [])
 
   React.useEffect(() => {
     async function loadGalleries() {
@@ -142,6 +161,43 @@ export default function UploadArtworkPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (profileLoading) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-12 flex justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+      </div>
+    )
+  }
+
+  if (!protectionActivated) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-12">
+        <div className="bg-bg-secondary border border-border rounded-2xl p-8 text-center shadow-xl shadow-black/10">
+          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-red-500/10 flex items-center justify-center">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-red-400">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-text-primary mb-3">Signature Seal Required</h2>
+          <p className="text-text-secondary mb-3 max-w-md mx-auto">
+            To protect your creative copyright, you need to set up your signature seal before uploading artwork.
+          </p>
+          <p className="text-sm text-gold font-medium mb-8">
+            You cannot post artwork without a signature seal.
+          </p>
+          <div className="flex justify-center gap-4">
+            <Button onClick={() => router.push('/dashboard/settings')}>
+              Set Up My Seal
+            </Button>
+            <Button variant="ghost" onClick={() => router.push('/dashboard')}>
+              Go to Dashboard
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

@@ -4,7 +4,7 @@ import { redirect } from "next/navigation"
 import { Card, Button, Input, Badge } from "@/components/ui"
 import Link from "next/link"
 import { ImageWithFallback } from "@/components/ImageWithFallback"
-
+import { DeleteArtworkButton } from "@/components/DeleteArtworkButton"
 export default async function GalleryManagementPage() {
   const session = await auth()
   if (!session?.user?.id) redirect('/login')
@@ -98,7 +98,10 @@ export default async function GalleryManagementPage() {
                       {art.price ? `$${Number(art.price).toFixed(2)}` : 'N/A'}
                     </td>
                     <td className="p-4 text-right">
-                      <Link href={`/dashboard/artwork/${art.id}/edit`}><Button variant="ghost" size="sm">Edit</Button></Link>
+                      <div className="flex items-center justify-end gap-2">
+                        <Link href={`/dashboard/artwork/${art.id}/edit`}><Button variant="ghost" size="sm">Edit</Button></Link>
+                        <DeleteArtworkButton artworkId={art.id} artworkStatus={art.status} />
+                      </div>
                     </td>
                   </tr>
                 ))}

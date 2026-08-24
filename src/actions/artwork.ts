@@ -422,3 +422,48 @@ export async function updateArtworkAction(data: {
     return { error: `Failed to update artwork: ${error.message || "Database error"}` }
   }
 }
+
+export async function deleteArtworkAction(artworkId: string) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return { error: "Unauthorized" }
+  }
+
+  try {
+    const artwork = await prisma.artwork.findUnique({
+      where: { id: artworkId }
+    })
+
+    if (!artwork || artwork.artistId !== session.user.id) {
+      return { error: "Unauthorized" }
+    }
+
+    if (artwork.status === 'SOLD') {
+      return { error: "This artwork has been sold and cannot be deleted." }
+    }
+
+    // Nullify any transaction references to this artwork
+    await prisma.transaction.updateMany({
+      where: { artworkId: artworkId },
+      data: { artworkId: null }
+    })
+
+    await prisma.artwork.delete({
+      where: { id: artworkId }
+    })
+
+    revalidatePath("/dashboard")
+    revalidatePath("/dashboard/gallery")
+    revalidatePath(`/profile/${session.user.id}`)
+    revalidatePath("/explore")
+    revalidatePath("/")
+    revalidateTag("artworks", "max")
+    revalidateTag("galleries", "max")
+
+    return { success: true }
+  } catch (error: any) {
+    console.error("[ARTWORK ACTION] ❌ FAILED to delete artwork:", error.message || error)
+    return { error: `Failed to delete artwork: ${error.message || "Database error"}` }
+  }
+}
+
