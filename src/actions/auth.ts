@@ -87,5 +87,15 @@ export async function loginUser(data: z.infer<typeof loginSchema>, callbackUrl?:
   }
 }
 
+export async function signInWithGoogle(callbackUrl?: string) {
+  try {
+    await signIn("google", {
+      redirectTo: callbackUrl || "/dashboard"
+    })
+  } catch (error) {
+    throw error
+  }
+}
+
 
 

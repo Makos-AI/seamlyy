@@ -44,7 +44,7 @@ export default async function GalleryManagementPage() {
                 <p className="text-sm text-text-secondary mb-4 line-clamp-2">{gallery.description}</p>
                 <div className="flex items-center justify-between mt-auto">
                   <span className="text-lg font-bold">${Number(gallery.accessFee).toFixed(2)} Access Fee</span>
-                  <Button variant="secondary" size="sm">Edit Exhibition</Button>
+                  <Link href={`/dashboard/gallery/${gallery.id}/edit`}><Button variant="secondary" size="sm">Edit Exhibition</Button></Link>
                 </div>
               </Card>
             ))}
@@ -52,7 +52,7 @@ export default async function GalleryManagementPage() {
         ) : (
           <Card className="p-12 text-center border-dashed bg-bg-secondary">
             <p className="text-text-secondary mb-4">You haven't created any premium exhibitions yet.</p>
-            <Button variant="secondary">Create Premium Exhibition</Button>
+            <Link href="/dashboard/gallery/new"><Button variant="secondary">Create Premium Exhibition</Button></Link>
           </Card>
         )}
       </div>
@@ -67,17 +67,14 @@ export default async function GalleryManagementPage() {
                   <th className="p-4 font-medium text-text-secondary">Artwork</th>
                   <th className="p-4 font-medium text-text-secondary">Status</th>
                   <th className="p-4 font-medium text-text-secondary">Standard Price</th>
-                  <th className="p-4 font-medium text-text-secondary">Min. View Time (Monetization)</th>
                   <th className="p-4 font-medium text-text-secondary text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {user.artworks.map((art) => (
-                  <tr key={art.id} className="hover:bg-bg-secondary/50 transition-colors group cursor-move">
+                  <tr key={art.id} className="hover:bg-bg-secondary/50 transition-colors group cursor-default">
                     <td className="p-4">
                       <div className="flex items-center gap-4">
-                        {/* Drag Handle Icon */}
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-muted opacity-0 group-hover:opacity-100 transition-opacity"><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg>
                         <div className="w-12 h-12 rounded bg-bg-tertiary overflow-hidden flex-shrink-0 relative">
                           <ImageWithFallback 
                             src={art.thumbnailUrl} 
@@ -100,20 +97,14 @@ export default async function GalleryManagementPage() {
                     <td className="p-4 font-medium">
                       {art.price ? `$${Number(art.price).toFixed(2)}` : 'N/A'}
                     </td>
-                    <td className="p-4">
-                      <div className="flex items-center gap-2 max-w-[120px]">
-                        <input type="number" className="w-16 bg-bg-primary border border-border rounded px-2 py-1 text-sm focus:outline-none focus:border-accent" defaultValue={5} />
-                        <span className="text-xs text-text-secondary">seconds</span>
-                      </div>
-                    </td>
                     <td className="p-4 text-right">
-                      <Button variant="ghost" size="sm">Edit</Button>
+                      <Link href={`/dashboard/artwork/${art.id}/edit`}><Button variant="ghost" size="sm">Edit</Button></Link>
                     </td>
                   </tr>
                 ))}
                 {user.artworks.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="p-8 text-center text-text-secondary">
+                    <td colSpan={4} className="p-8 text-center text-text-secondary">
                       No artworks found. Upload some pieces to start managing your gallery.
                     </td>
                   </tr>

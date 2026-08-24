@@ -117,7 +117,6 @@ export default function UploadArtworkPage() {
         displayKey: uploadData.displayKey,
         highResKey: uploadData.highResKey,
         blurDataURL: uploadData.blurDataURL,
-        blurDataURL: uploadData.blurDataURL,
         masterWidth: uploadData.masterWidth,
         masterHeight: uploadData.masterHeight,
         inspectionStatus: uploadData.inspectionStatus,
@@ -341,8 +340,8 @@ export default function UploadArtworkPage() {
               </div>
             </form>
       </Card>
-    )
-    } 
+    </>
+    )}
   </div>
   )
 }

@@ -88,7 +88,7 @@ export async function createArtworkAction(data: {
     revalidatePath("/explore")
     revalidatePath(`/profile/${session.user.id}`)
     revalidatePath("/")
-    revalidateTag("artworks")
+    revalidateTag("artworks", "max")
 
     console.log(`[ARTWORK ACTION] ✅ Cache revalidated for dashboard, explore, profile, home`)
 
@@ -140,8 +140,8 @@ export async function createGalleryAction(data: {
     revalidatePath("/explore")
     revalidatePath(`/profile/${session.user.id}`)
     revalidatePath("/")
-    revalidateTag("galleries")
-    revalidateTag("artworks")
+    revalidateTag("galleries", "max")
+    revalidateTag("artworks", "max")
     return { success: true, galleryId: gallery.id }
   } catch (error: any) {
     console.error("[GALLERY ACTION] ❌ FAILED:", error.message || error)
@@ -210,5 +210,215 @@ export async function getHighResDownloadUrl(artworkId: string) {
   } catch (error: any) {
     console.error("High res download error:", error)
     return { error: error.message || "Failed to generate download link" }
+  }
+}
+
+export async function getGalleryById(galleryId: string) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return { error: "Unauthorized" }
+  }
+
+  try {
+    const gallery = await prisma.gallery.findUnique({
+      where: { id: galleryId },
+      include: {
+        artworks: { select: { id: true, title: true, thumbnailUrl: true } },
+        _count: { select: { artworks: true } }
+      }
+    })
+
+    if (!gallery) {
+      return { error: "Gallery not found" }
+    }
+
+    if (gallery.artistId !== session.user.id) {
+      return { error: "Unauthorized" }
+    }
+
+    return { success: true, gallery }
+  } catch (error: any) {
+    console.error("[GALLERY ACTION] ❌ FAILED to get gallery:", error.message || error)
+    return { error: `Failed to get gallery: ${error.message || "Database error"}` }
+  }
+}
+
+export async function getArtworkById(artworkId: string) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return { error: "Unauthorized" }
+  }
+
+  try {
+    const artwork = await prisma.artwork.findUnique({
+      where: { id: artworkId },
+      include: {
+        gallery: { select: { id: true, title: true } }
+      }
+    })
+
+    if (!artwork) {
+      return { error: "Artwork not found" }
+    }
+
+    if (artwork.artistId !== session.user.id) {
+      return { error: "Unauthorized" }
+    }
+
+    return { success: true, artwork }
+  } catch (error: any) {
+    console.error("[ARTWORK ACTION] ❌ FAILED to get artwork:", error.message || error)
+    return { error: `Failed to get artwork: ${error.message || "Database error"}` }
+  }
+}
+
+export async function updateGalleryAction(data: {
+  galleryId: string
+  title: string
+  description: string
+  accessFee: number
+  coverImageUrl?: string
+  coverImageKey?: string
+  coverBlurDataURL?: string | null
+}) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return { error: "Unauthorized" }
+  }
+
+  console.log(`[GALLERY ACTION] Updating gallery "${data.galleryId}" for user ${session.user.id}`)
+
+  try {
+    const gallery = await prisma.gallery.findUnique({
+      where: { id: data.galleryId }
+    })
+
+    if (!gallery || gallery.artistId !== session.user.id) {
+      return { error: "Unauthorized" }
+    }
+
+    const updateData: any = {
+      title: data.title,
+      description: data.description,
+      accessFee: data.accessFee
+    }
+    if (data.coverImageUrl) updateData.coverImageUrl = data.coverImageUrl
+    if (data.coverImageKey) updateData.coverImageKey = data.coverImageKey
+    if (data.coverBlurDataURL !== undefined) updateData.coverBlurDataURL = data.coverBlurDataURL
+
+    await prisma.gallery.update({
+      where: { id: data.galleryId },
+      data: updateData
+    })
+
+    console.log(`[GALLERY ACTION] ✅ Gallery updated in DB! ID: ${data.galleryId}`)
+
+    revalidatePath("/dashboard")
+    revalidatePath("/dashboard/gallery")
+    revalidatePath(`/gallery/${data.galleryId}`)
+    revalidatePath(`/profile/${session.user.id}`)
+    revalidatePath("/explore")
+    revalidatePath("/")
+    revalidateTag("galleries", "max")
+    revalidateTag("artworks", "max")
+
+    return { success: true, galleryId: data.galleryId }
+  } catch (error: any) {
+    console.error("[GALLERY ACTION] ❌ FAILED to update gallery:", error.message || error)
+    return { error: `Failed to update gallery: ${error.message || "Database error"}` }
+  }
+}
+
+export async function deleteGalleryAction(galleryId: string) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return { error: "Unauthorized" }
+  }
+
+  console.log(`[GALLERY ACTION] Deleting gallery "${galleryId}" for user ${session.user.id}`)
+
+  try {
+    const gallery = await prisma.gallery.findUnique({
+      where: { id: galleryId }
+    })
+
+    if (!gallery || gallery.artistId !== session.user.id) {
+      return { error: "Unauthorized" }
+    }
+
+    await prisma.gallery.delete({
+      where: { id: galleryId }
+    })
+
+    console.log(`[GALLERY ACTION] ✅ Gallery deleted in DB! ID: ${galleryId}`)
+
+    revalidatePath("/dashboard")
+    revalidatePath("/dashboard/gallery")
+    revalidatePath(`/gallery/${galleryId}`)
+    revalidatePath(`/profile/${session.user.id}`)
+    revalidatePath("/explore")
+    revalidatePath("/")
+    revalidateTag("galleries", "max")
+    revalidateTag("artworks", "max")
+
+    return { success: true }
+  } catch (error: any) {
+    console.error("[GALLERY ACTION] ❌ FAILED to delete gallery:", error.message || error)
+    return { error: `Failed to delete gallery: ${error.message || "Database error"}` }
+  }
+}
+
+export async function updateArtworkAction(data: {
+  artworkId: string
+  title: string
+  description: string
+  price: number | null
+  status: string
+  category: string
+  galleryId: string | null
+}) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return { error: "Unauthorized" }
+  }
+
+  console.log(`[ARTWORK ACTION] Updating artwork "${data.artworkId}" for user ${session.user.id}`)
+
+  try {
+    const artwork = await prisma.artwork.findUnique({
+      where: { id: data.artworkId }
+    })
+
+    if (!artwork || artwork.artistId !== session.user.id) {
+      return { error: "Unauthorized" }
+    }
+
+    await prisma.artwork.update({
+      where: { id: data.artworkId },
+      data: {
+        title: data.title,
+        description: data.description,
+        price: data.price,
+        status: data.status,
+        category: data.category,
+        galleryId: data.galleryId
+      }
+    })
+
+    console.log(`[ARTWORK ACTION] ✅ Artwork updated in DB! ID: ${data.artworkId}`)
+
+    revalidatePath("/dashboard")
+    revalidatePath("/dashboard/gallery")
+    revalidatePath(`/artwork/${data.artworkId}`)
+    revalidatePath(`/profile/${session.user.id}`)
+    revalidatePath("/explore")
+    revalidatePath("/")
+    revalidateTag("artworks", "max")
+    revalidateTag("galleries", "max")
+
+    return { success: true, artworkId: data.artworkId }
+  } catch (error: any) {
+    console.error("[ARTWORK ACTION] ❌ FAILED to update artwork:", error.message || error)
+    return { error: `Failed to update artwork: ${error.message || "Database error"}` }
   }
 }

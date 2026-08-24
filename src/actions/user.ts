@@ -41,7 +41,9 @@ export async function getProfile() {
         name: true,
         walletPointer: true,
         bio: true,
-        preferredCurrency: true
+        preferredCurrency: true,
+        protectionActivated: true,
+        signatureLocked: true
       }
     })
     
