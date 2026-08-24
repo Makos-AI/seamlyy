@@ -385,7 +385,7 @@ export default function LandingPage() {
           <div className="close__inner" data-animate>
             <h2 className="close__brand">Seamlyy</h2>
             <p className="close__message">You've put in the hard work. Let us handle the rest</p>
-            <Link href="/explore" className="close__btn">
+            <Link href="/" className="close__btn">
               Get <em>Seamlyy</em>
             </Link>
           </div>

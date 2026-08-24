@@ -13,9 +13,8 @@ function LoginForm() {
   // 1. FIXED REDIRECT: This tells it to go to /dashboard after login instead of /
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard" 
   
-  // 2. HARDCODED CREDENTIALS: These will now automatically appear in the boxes
-  const [email, setEmail] = React.useState("iii.7@gmail.com")
-  const [password, setPassword] = React.useState("12345678")
+  const [email, setEmail] = React.useState("")
+  const [password, setPassword] = React.useState("")
   
   const [loading, setLoading] = React.useState(false)
   const [googleLoading, setGoogleLoading] = React.useState(false)
