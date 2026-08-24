@@ -364,13 +364,7 @@ export default function LandingPage() {
           </p>
 
           {/* Scattered images */}
-          <img
-            src="https://images.unsplash.com/photo-1578926375605-eaf7559b1458?w=400&q=80"
-            alt=""
-            className="carson__image"
-            style={{ top: '35%', left: '55%', width: '22%', transform: 'rotate(5deg)' }}
-            loading="lazy"
-          />
+ 
           <img
             src="https://images.unsplash.com/photo-1582582621959-48d27397dc69?w=400&q=80"
             alt=""
