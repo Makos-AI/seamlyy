@@ -6,7 +6,7 @@ import './landing/landing.css';
 
 const GATE_SLIDES = [
   {
-    image: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=1920&q=80',
+    image: '/pencil-drawing-bg.jpg',
     action: 'draw',
     verb: 'get',
   },
