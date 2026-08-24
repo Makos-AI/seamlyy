@@ -148,8 +148,9 @@ export default function LandingPage() {
           />
           <div className="section__overlay" />
           <div className="section__inner">
-            <h2 className="section__title" data-animate>
-              It starts with a <em className="section__title-word">feelingg</em>
+            <h2 className="section__title" data-animate> 
+              It starts... <br />
+              with a <em className="section__title-word">feelingg</em>
             </h2>
             <div className="spark__text">
               <p className="spark__line" data-animate>A color you saw on the way home.</p>
@@ -383,7 +384,7 @@ export default function LandingPage() {
         <section className="section section--close">
           <div className="close__inner" data-animate>
             <h2 className="close__brand">Seamlyy</h2>
-            <p className="close__message">Art deserves better. So do you.</p>
+            <p className="close__message">You've put in the hard work. Let us handle the rest</p>
             <Link href="/explore" className="close__btn">
               Get <em>Seamlyy</em>
             </Link>
