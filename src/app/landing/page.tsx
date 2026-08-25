@@ -157,7 +157,7 @@ export default function LandingPage() {
               <p className="spark__line" data-animate>A face you can&apos;t forget.</p>
               <p className="spark__line" data-animate>A feeling that won&apos;t leave you alone.</p>
               <p className="spark__line" data-animate>
-                Before the brush touches canvas <br /> before the pencil finds paper <br /> there&apos;s a moment.
+                Before the brush touches canvas <br /> before the pencil finds paper  <br /> there&apos;s a moment.
               </p>
               <p className="spark__line spark__line--final" data-animate>And you know.</p>
             </div>
