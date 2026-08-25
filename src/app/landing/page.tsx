@@ -363,7 +363,7 @@ export default function LandingPage() {
             <span className="carson__quote-author">— Edgar Degas</span>
           </p>
 
-          {/* Scattered images */}
+ 
  
  
         </section>
