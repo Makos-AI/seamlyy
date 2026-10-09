@@ -1,6 +1,7 @@
 import { Button, Badge } from "@/components/ui"
 import Link from "next/link"
 import { ImageWithFallback } from "@/components/ImageWithFallback"
+import { UserGuide } from "@/components/UserGuide"
 
 export default function AboutPage() {
   return (
@@ -91,6 +92,14 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+
+      {/* Divider */}
+      <div className="container mx-auto px-4">
+        <div className="border-t border-border" />
+      </div>
+
+      {/* User Guide Section */}
+      <UserGuide />
     </div>
   )
 }
